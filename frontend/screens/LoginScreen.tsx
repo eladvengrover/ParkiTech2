@@ -1,8 +1,16 @@
 // screens/LoginPage.tsx
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types'; // Adjust the path as needed
 
-const LoginScreen: React.FC = () => {
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+
+type Props = {
+  navigation: HomeScreenNavigationProp;
+};
+
+const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -27,7 +35,7 @@ const LoginScreen: React.FC = () => {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <Button title="Login" onPress={handleLogin} />
+      <Button title="Login" onPress={() => navigation.navigate('TenantMain')} />
     </View>
   );
 };
