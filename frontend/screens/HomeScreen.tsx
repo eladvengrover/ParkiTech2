@@ -1,8 +1,9 @@
 // screens/HomeScreen.tsx
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import commonStyles from './commonStyles';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types'; // Adjust the path as needed
+import { RootStackParamList } from '../types';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -11,37 +12,26 @@ type Props = {
 };
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
+
+  const handleLogin = () => {
+    navigation.navigate('Login');
+  };
+
+  const handleGuest = () => {
+    navigation.navigate('Guest');
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.logo}>🚗 ParkiTect</Text>
-      <Text style={styles.title}>Welcome to ParkiTect</Text>
-      <Button title="Login" onPress={() => navigation.navigate('Login')} />
-      <View style={styles.spacer} />
-      <Button title="Continue as Guest" onPress={() => navigation.navigate('Guest')} />
+    <View style={commonStyles.container}>
+      <Text style={commonStyles.title}>Welcome to ParkiTect 🚗</Text>
+      <TouchableOpacity style={commonStyles.button} onPress={handleLogin}>
+        <Text style={commonStyles.buttonText}>Login</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={commonStyles.button} onPress={handleGuest}>
+        <Text style={commonStyles.buttonText}>Continue as Guest</Text>
+      </TouchableOpacity>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  logo: {
-    fontSize: 40,
-    marginBottom: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-  spacer: {
-    height: 20,
-  },
-});
 
 export default HomeScreen;

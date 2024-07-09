@@ -1,47 +1,38 @@
 // screens/GuestScreen.tsx
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types';
+import commonStyles from './commonStyles';
 
-const GuestScreen: React.FC = () => {
-  const [invitationNumber, setInvitationNumber] = useState('');
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Guest'>;
+
+type Props = {
+  navigation: HomeScreenNavigationProp;
+};
+const GuestScreen: React.FC<Props> = ({ navigation }) => {
+  const [InvitationNumber, setInvitationNumber] = useState('');
 
   const handleContinue = () => {
     // Add logic to handle invitation number
-    console.log('Invitation Number:', invitationNumber);
+    navigation.navigate('GuestDirection');
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Enter Invitation Number</Text>
+    <View style={commonStyles.container}>
+      <Text style={commonStyles.title}>Enter Invitation Number</Text>
       <TextInput
-        style={styles.input}
-        placeholder="Invitation Number"
-        value={invitationNumber}
-        onChangeText={setInvitationNumber}
+          style={commonStyles.input}
+          placeholder="Invitation Number"
+          value={InvitationNumber}
+          onChangeText={setInvitationNumber}
+          keyboardType="numeric"
       />
-      <Button title="Continue" onPress={handleContinue} />
+      <TouchableOpacity style={commonStyles.button} onPress={handleContinue}>
+        <Text style={commonStyles.buttonText}>Continue</Text>
+      </TouchableOpacity>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 8,
-  },
-});
 
 export default GuestScreen;
