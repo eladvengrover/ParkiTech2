@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 
-const LoginPage: React.FC = () => {
+const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -52,4 +52,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginPage;
+export default LoginScreen;
