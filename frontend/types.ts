@@ -4,7 +4,10 @@ export type RootStackParamList = {
     Login: undefined;
     Guest: undefined;
     TenantMain: undefined;
-    CreateBookingScreen: undefined;
-    ViewBookingScreen: undefined;
+    CreateBooking: undefined;
+    ViewBooking: undefined;
+    GuestDirection: undefined
+    EditBooking: { id: string };
+
   };
   
