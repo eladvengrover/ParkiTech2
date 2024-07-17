@@ -32,3 +32,20 @@ def delete_booking(booking_id):
         print(f"Booking with ID: {booking_id} deleted.")
     else:
         print(f"Booking with ID: {booking_id} not found.")
+
+
+if __name__ == "__main__":
+    from datetime import datetime, timedelta
+
+    add_booking(
+        resident_id=1,
+        guest_name="John Doe",
+        guest_car_number="1234XYZ",
+        booking_start=datetime.now(),
+        booking_end=datetime.now() + timedelta(hours=2),
+        status="confirmed"
+    )
+
+    delete_booking(6)
+
+    update_booking(4, guest_name="Shahar")
