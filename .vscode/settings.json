@@ -1,0 +1,13 @@
+{
+    "azureFunctions.javaBuildTool": "gradle",
+    "azureFunctions.deploySubpath": "backend",
+    "azureFunctions.projectLanguage": "Python",
+    "azureFunctions.projectRuntime": "~4",
+    "debug.internalConsoleOptions": "neverOpen",
+    "azureFunctions.preDeployTask": "package (functions)",
+    "java.compile.nullAnalysis.mode": "disabled",
+    "azureFunctions.scmDoBuildDuringDeployment": true,
+    "azureFunctions.pythonVenv": ".venv",
+    "azureFunctions.projectLanguageModel": 2,
+    "cmake.configureOnOpen": true
+}
