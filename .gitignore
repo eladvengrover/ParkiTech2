@@ -3,6 +3,7 @@
 # dependencies
 node_modules/
 /frontend/package-lock.json
+/package-lock.json
 
 # Expo
 .expo/
