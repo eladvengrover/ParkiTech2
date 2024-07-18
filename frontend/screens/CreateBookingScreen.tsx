@@ -35,6 +35,8 @@ const CreateBookingScreen: React.FC = () => {
       return;
     }
 
+    submitBooking();
+
     // Add logic to handle form submission
     console.log('------------------------------------');
     console.log('Vehicle Number:', vehicleNumber);
@@ -62,6 +64,34 @@ const CreateBookingScreen: React.FC = () => {
     setShowEndPicker(false);
     setEndDateTime(currentDate);
   };
+
+  const submitBooking = () => {
+
+    const bookingData = {
+      resident_id: "12345",  // Replace with actual data
+      guest_name: "John Doe",  // Replace with actual data
+      guest_car_number: vehicleNumber,  // Replace with actual data
+      booking_start: startDateTime,  // Replace with actual data
+      booking_end: endDateTime,  // Replace with actual data
+      };
+
+
+      fetch("https://parkitect.azurewebsites.net/api/CreateNewBooking?", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bookingData)
+      }).then((response) => {
+        console.log("log elad");
+        return response.text();
+      }).then((text) => {
+        console.log(text);
+      }).catch((error) => {
+        console.error(error);
+      });
+  };
+
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
