@@ -1,7 +1,6 @@
 {
   "recommendations": [
     "ms-azuretools.vscode-azurefunctions",
-    "ms-python.python",
-    "vscjava.vscode-java-debug"
+    "ms-python.python"
   ]
 }
