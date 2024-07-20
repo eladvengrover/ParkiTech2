@@ -73,6 +73,7 @@ const CreateBookingScreen: React.FC = () => {
       guest_car_number: vehicleNumber,  // Replace with actual data
       booking_start: startDateTime,  // Replace with actual data
       booking_end: endDateTime,  // Replace with actual data
+      status: "confirmed",
       };
 
 

@@ -4,7 +4,7 @@ from models import Base
 
 # Replace with your actual connection string and password
 connection_string = (
-    "DRIVER={ODBC Driver 17 for SQL Server};"
+    "DRIVER={ODBC Driver 18 for SQL Server};"
     "SERVER=tcp:parkitechserver.database.windows.net,1433;"
     "DATABASE=ParkiTechDB;"
     "UID=parkitechserveradmin;"
