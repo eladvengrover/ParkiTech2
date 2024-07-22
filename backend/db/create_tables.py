@@ -19,4 +19,4 @@ engine = create_engine(f"mssql+pyodbc:///?odbc_connect={encoded_connection_strin
 Base.metadata.create_all(engine)
 
 
-print("Users table created successfully!")
+print("Table created successfully!")

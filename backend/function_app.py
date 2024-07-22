@@ -1,6 +1,6 @@
 import azure.functions as func
 import logging
-from db.operations import add_booking
+from db.booking_operations import add_booking
 from db.users_operations import login
 from datetime import datetime
 
