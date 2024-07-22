@@ -42,13 +42,16 @@ def update_user_password(username, new_password):
 
 def login(username, password):
     try:
+        print("inside login function: ", username, ", ", password)
         # Query the user by username and password
         user = session.query(User).filter_by(username=username, password=password).first()
         
         # If user is found and password matches, return True
         if user:
+            logging.info("case 1.1")
             return True
         else:
+            logging.info("case 1.2")
             return False
     except Exception as e:
         print(f"An error occurred: {e}")

@@ -84,7 +84,6 @@ const CreateBookingScreen: React.FC = () => {
         },
         body: JSON.stringify(bookingData)
       }).then((response) => {
-        console.log("log elad");
         return response.text();
       }).then((text) => {
         console.log(text);

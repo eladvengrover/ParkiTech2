@@ -1,6 +1,6 @@
 // screens/LoginScreen.tsx
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import commonStyles from './commonStyles';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
@@ -15,10 +15,49 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLoginSubmit = () => {
+  const handleLoginSubmit = async() => {
     console.log('Logging in with:', username, password);
-    navigation.navigate('TenantMain');
+    const userData = {
+      username: username,
+      password: password,
     };
+
+    try {
+      const response = await fetch('https://parkitect.azurewebsites.net/api/UserLogin?', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      const responseStatus = response.status;
+      console.log('Response Status:', response.status);
+      console.log('Response Text:', await response.text());
+
+      if (responseStatus == 200) {
+        navigation.navigate('TenantMain');
+      } else {
+        Alert.alert(
+          "Login Failed",
+          "Incorrect username or password, please try again",
+          [{ text: "OK" }]
+        );
+      }
+    } catch (error) {
+      console.error('Error logging in:', error);
+      Alert.alert(
+        "Error",
+        "An error occurred. Please try again later.",
+        [{ text: "OK" }]
+      );
+    }
+
+
+
+
+
+    
+  };
 
   return (
     <View style={commonStyles.container}>
