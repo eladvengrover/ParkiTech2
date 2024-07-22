@@ -97,14 +97,16 @@ def UserLogin(req: func.HttpRequest) -> func.HttpResponse:
     password = req_body.get('password')
 
     if not username or not password:
-        logging.info("case 1")
-        logging.error(f"Error in UserLogin, username and password required: {e}")
-        return func.HttpResponse(f"Error: {str(e)}", status_code=400)
+        logging.error(f"Error in UserLogin, username and password required.")
+        return func.HttpResponse(f"Error: username and password required", status_code=400)
 
-    if login(username, password):
-        logging.info("case 2")
-        return func.HttpResponse("Login successfully.", status_code=200)
-    else:
-        logging.info("case 3")
+    try:
+        login_result = login(username, password) 
+        if login_result:
+            return func.HttpResponse("Login successfully.", status_code=200)
+        else:
+            logging.error(f"Error in UserLogin: username/password are incorrect.")
+            return func.HttpResponse(f"Error: username/password are incorrect.", status_code=403)
+    except Exception as e:
         logging.error(f"Error in UserLogin: {e}")
         return func.HttpResponse(f"Error: {str(e)}", status_code=500)
