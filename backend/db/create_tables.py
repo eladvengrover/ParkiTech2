@@ -1,26 +1,22 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Column, Integer, Boolean, String, MetaData, Table
 from urllib.parse import quote_plus
-from UsersDBTypes import Base
+from .users_table_types import Base
 
-# Replace with your actual connection string and password
+# Define connection string and encode it
 connection_string = (
     "DRIVER={ODBC Driver 18 for SQL Server};"
     "SERVER=tcp:parkitechserver.database.windows.net,1433;"
-    "DATABASE=ParkitectUsersDB;"
+    "DATABASE=ParkiTechDB;"
     "UID=parkitechserveradmin;"
     "PWD=Yahel1210;"
     "Encrypt=yes;"
     "TrustServerCertificate=no;"
     "Connection Timeout=30;"
 )
+encoded_connection_string = quote_plus(connection_string)
+engine = create_engine(f"mssql+pyodbc:///?odbc_connect={encoded_connection_string}")
 
-# # URL-encode the connection string
-# encoded_connection_string = quote_plus(connection_string)
+Base.metadata.create_all(engine)
 
-# # Create the engine
-# engine = create_engine(f"mssql+pyodbc:///?odbc_connect={encoded_connection_string}")
 
-# # Create all tables
-# Base.metadata.create_all(engine)
-
-print("Tables created successfully!")
+print("Users table created successfully!")
