@@ -6,7 +6,7 @@ from urllib.parse import quote_plus
 connection_string = (
     "DRIVER={ODBC Driver 18 for SQL Server};"
     "SERVER=tcp:parkitechserver.database.windows.net,1433;"
-    "DATABASE=ParkiTechDB;"
+    "DATABASE=ParkitectUsersDB;"
     "UID=parkitechserveradmin;"
     "PWD=Yahel1210;"
     "Encrypt=yes;"
