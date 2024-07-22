@@ -1,5 +1,5 @@
 from .connection import session
-from .models import Booking
+from .booking_table_types import Booking
 
 def add_booking(resident_id, guest_name, guest_car_number, booking_start, booking_end, status):
     new_booking = Booking(

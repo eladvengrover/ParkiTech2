@@ -1,6 +1,7 @@
 import azure.functions as func
 import logging
-from db.operations import add_booking
+from db.booking_operations import add_booking
+from db.users_operations import login
 from datetime import datetime
 
 
@@ -77,3 +78,35 @@ def UpdateBooking(req: func.HttpRequest) -> func.HttpResponse:
              "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
              status_code=200
         )
+
+@app.route(route="UserLogin", auth_level=func.AuthLevel.ANONYMOUS)
+def UserLogin(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: UserLogin')
+
+    try:
+        req_body = req.get_json()
+        logging.info(req_body)
+    except ValueError:
+        return func.HttpResponse(
+            json.dumps({"error": "Invalid request"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    username = req_body.get('username')
+    password = req_body.get('password')
+
+    if not username or not password:
+        logging.error(f"Error in UserLogin, username and password required.")
+        return func.HttpResponse(f"Error: username and password required", status_code=400)
+
+    try:
+        login_result = login(username, password) 
+        if login_result:
+            return func.HttpResponse("Login successfully.", status_code=200)
+        else:
+            logging.error(f"Error in UserLogin: username/password are incorrect.")
+            return func.HttpResponse(f"Error: username/password are incorrect.", status_code=403)
+    except Exception as e:
+        logging.error(f"Error in UserLogin: {e}")
+        return func.HttpResponse(f"Error: {str(e)}", status_code=500)
