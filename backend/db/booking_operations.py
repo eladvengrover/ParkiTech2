@@ -1,5 +1,11 @@
 from .connection import session
-from .booking_table_types import Booking
+from .db_types.booking_table_types import Booking
+
+def add_booking_2(new_booking):
+    session.add(new_booking)
+    session.commit()
+    print(f"Booking added with ID: {new_booking.id}")
+
 
 def add_booking(resident_id, guest_name, guest_car_number, booking_start, booking_end, status):
     new_booking = Booking(

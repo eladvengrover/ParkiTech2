@@ -13,3 +13,4 @@ class Booking(Base):
     booking_start = Column(DateTime, nullable=False)
     booking_end = Column(DateTime, nullable=False)
     status = Column(String, nullable=False)
+    parking_id = Column(Integer, ForeignKey('Parkings.parking_id'))
