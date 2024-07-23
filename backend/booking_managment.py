@@ -3,6 +3,7 @@ from db.db_types.booking_table_types import Booking
 from db.db_types.users_table_types import User
 from db.db_types.parking_table_types import Parking
 from db.db_types.parking_availability_types import ParkingAvailability
+from sqlalchemy import and_
 
 def allocate_parking(resident_id, guest_name, guest_car_number, start_time, end_time, status):
     available_slots = session.query(ParkingAvailability).filter(
@@ -30,7 +31,7 @@ def allocate_parking(resident_id, guest_name, guest_car_number, start_time, end_
             booking_end=end_time,
             status=status,
             parking_id=best_slot.parking_id,
-    )
+        )
         
         session.add(new_booking)
         session.commit()
@@ -50,12 +51,14 @@ def allocate_parking(resident_id, guest_name, guest_car_number, start_time, end_
         )
         session.add(new_occupied_slot)
         
+        # TODO - BUG! this code isnt working! it is not createing the third part :
         if best_slot.end_time > end_time:
             new_available_slot = ParkingAvailability(
                 parking_id=best_slot.parking_id,
                 start_time=end_time,
                 end_time=best_slot.end_time,
-                status='Available'
+                status='Available',
+                booking_id=NU
             )
             session.add(new_available_slot)
 
@@ -64,4 +67,17 @@ def allocate_parking(resident_id, guest_name, guest_car_number, start_time, end_
         return new_booking.id
     else:
         return None
+
+
+if __name__ == "__main__":
+    from datetime import datetime, timedelta
+
+    allocate_parking(
+        resident_id=1,
+        guest_name="Elad2",
+        guest_car_number="1234XYZ",
+        start_time=datetime.now() - timedelta(days=10),
+        end_time=datetime.now() - timedelta(days=10) + timedelta(hours=2),
+        status="confirmed"
+    )
 
