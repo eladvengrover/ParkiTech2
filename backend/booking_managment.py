@@ -6,13 +6,6 @@ from db.db_types.parking_availability_types import ParkingAvailability
 from sqlalchemy import and_
 
 def allocate_parking(resident_id, guest_name, guest_car_number, start_time, end_time, status):
-    print(f"Input start_time: {start_time}, end_time: {end_time}")
-
-    # Ensure start_time and end_time are timezone-naive
-    start_time = start_time.replace(tzinfo=None)
-    end_time = end_time.replace(tzinfo=None)
-
-    print(f"Naive start_time: {start_time}, end_time: {end_time}")
     available_slots = session.query(ParkingAvailability).filter(
         and_(
             ParkingAvailability.status == 'Available',

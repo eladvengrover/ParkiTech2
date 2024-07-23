@@ -4,6 +4,7 @@ from db.booking_operations import add_booking
 from booking_managment import allocate_parking
 from db.users_operations import login
 from datetime import datetime
+from helpers import adjust_timezone_formatting
 
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
@@ -23,13 +24,8 @@ def CreateNewBooking(req: func.HttpRequest) -> func.HttpResponse:
         name = req_body.get('name')
 
     try:
-        # Parse the datetime strings to datetime objects (with timezone awareness)
-        start_time = datetime.fromisoformat(req_body['booking_start'].replace("Z", "+00:00"))
-        end_time = datetime.fromisoformat(req_body['booking_end'].replace("Z", "+00:00"))
-
-        # Convert to naive datetime by removing timezone info
-        start_time = start_time.replace(tzinfo=None)
-        end_time = end_time.replace(tzinfo=None)
+        start_time = adjust_timezone_formatting(req_body['booking_start'])
+        end_time = adjust_timezone_formatting(req_body['booking_end'])
 
         allocate_parking(
             resident_id=req_body['resident_id'],
