@@ -6,6 +6,13 @@ from db.db_types.parking_availability_types import ParkingAvailability
 from sqlalchemy import and_
 
 def allocate_parking(resident_id, guest_name, guest_car_number, start_time, end_time, status):
+    print(f"Input start_time: {start_time}, end_time: {end_time}")
+
+    # Ensure start_time and end_time are timezone-naive
+    start_time = start_time.replace(tzinfo=None)
+    end_time = end_time.replace(tzinfo=None)
+
+    print(f"Naive start_time: {start_time}, end_time: {end_time}")
     available_slots = session.query(ParkingAvailability).filter(
         and_(
             ParkingAvailability.status == 'Available',
@@ -37,11 +44,18 @@ def allocate_parking(resident_id, guest_name, guest_car_number, start_time, end_
         session.commit()
         print(f"Booking added with ID: {new_booking.id}")
 
-        # Update the parking slot status
-        session.query(ParkingAvailability).filter(ParkingAvailability.availability_id == best_slot.availability_id).update({
-            ParkingAvailability.end_time: start_time
-        })
-        
+        # Split the available slot into three parts if necessary
+        if best_slot.start_time < start_time:
+            # Create a slot for the time before the booking
+            new_pre_booking_slot = ParkingAvailability(
+                parking_id=best_slot.parking_id,
+                start_time=best_slot.start_time,
+                end_time=start_time,
+                status='Available'
+            )
+            session.add(new_pre_booking_slot)
+
+        # Create a slot for the booking time
         new_occupied_slot = ParkingAvailability(
             parking_id=best_slot.parking_id,
             start_time=start_time,
@@ -50,18 +64,19 @@ def allocate_parking(resident_id, guest_name, guest_car_number, start_time, end_
             booking_id=new_booking.id
         )
         session.add(new_occupied_slot)
-        
-        # TODO - BUG! this code isnt working! it is not createing the third part :
+
         if best_slot.end_time > end_time:
-            new_available_slot = ParkingAvailability(
+            # Create a slot for the time after the booking
+            new_post_booking_slot = ParkingAvailability(
                 parking_id=best_slot.parking_id,
                 start_time=end_time,
                 end_time=best_slot.end_time,
-                status='Available',
-                booking_id=NU
+                status='Available'
             )
-            session.add(new_available_slot)
+            session.add(new_post_booking_slot)
 
+        # Remove the old slot
+        session.delete(best_slot)
         session.commit()
 
         return new_booking.id
@@ -76,8 +91,8 @@ if __name__ == "__main__":
         resident_id=1,
         guest_name="Elad2",
         guest_car_number="1234XYZ",
-        start_time=datetime.now() - timedelta(days=10),
-        end_time=datetime.now() - timedelta(days=10) + timedelta(hours=2),
+        start_time=datetime.now() + timedelta(days=1),
+        end_time=datetime.now() + timedelta(days=1) + timedelta(hours=2),
         status="confirmed"
     )
 

@@ -23,12 +23,20 @@ def CreateNewBooking(req: func.HttpRequest) -> func.HttpResponse:
         name = req_body.get('name')
 
     try:
+        # Parse the datetime strings to datetime objects (with timezone awareness)
+        start_time = datetime.fromisoformat(req_body['booking_start'].replace("Z", "+00:00"))
+        end_time = datetime.fromisoformat(req_body['booking_end'].replace("Z", "+00:00"))
+
+        # Convert to naive datetime by removing timezone info
+        start_time = start_time.replace(tzinfo=None)
+        end_time = end_time.replace(tzinfo=None)
+
         allocate_parking(
             resident_id=req_body['resident_id'],
             guest_name=req_body['guest_name'],
             guest_car_number=req_body['guest_car_number'],
-            start_time=datetime.fromisoformat(req_body['booking_start']),
-            end_time=datetime.fromisoformat(req_body['booking_end']),
+            start_time=start_time,
+            end_time=end_time,
             status=req_body['status']
         )
         logging.info(f"Booking created successfully: {req_body}")
