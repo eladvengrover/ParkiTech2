@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -13,3 +13,6 @@ class Booking(Base):
     booking_start = Column(DateTime, nullable=False)
     booking_end = Column(DateTime, nullable=False)
     status = Column(String, nullable=False)
+    parking_id = Column(Integer, nullable=False)
+    # parking_id = Column(Integer, ForeignKey('parkings.parking_id')) 
+    # TODO - check the issue with foreign key and enable it!

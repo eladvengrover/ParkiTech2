@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Column, Integer, Boolean, String, MetaData, Table
 from urllib.parse import quote_plus
-from .users_table_types import Base
+from .db_types.users_table_types import Base
 
 # Define connection string and encode it
 connection_string = (

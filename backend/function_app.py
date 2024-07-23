@@ -1,8 +1,10 @@
 import azure.functions as func
 import logging
 from db.booking_operations import add_booking
+from booking_managment import allocate_parking
 from db.users_operations import login
 from datetime import datetime
+from helpers import adjust_timezone_formatting
 
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
@@ -22,12 +24,15 @@ def CreateNewBooking(req: func.HttpRequest) -> func.HttpResponse:
         name = req_body.get('name')
 
     try:
-        add_booking(
+        start_time = adjust_timezone_formatting(req_body['booking_start'])
+        end_time = adjust_timezone_formatting(req_body['booking_end'])
+
+        allocate_parking(
             resident_id=req_body['resident_id'],
             guest_name=req_body['guest_name'],
             guest_car_number=req_body['guest_car_number'],
-            booking_start=datetime.fromisoformat(req_body['booking_start']),
-            booking_end=datetime.fromisoformat(req_body['booking_end']),
+            start_time=start_time,
+            end_time=end_time,
             status=req_body['status']
         )
         logging.info(f"Booking created successfully: {req_body}")

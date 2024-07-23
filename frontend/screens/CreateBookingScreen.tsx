@@ -67,12 +67,15 @@ const CreateBookingScreen: React.FC = () => {
 
   const submitBooking = () => {
 
+    console.log(startDateTime);
+    console.log(endDateTime);
+
     const bookingData = {
       resident_id: "12345",  // Replace with actual data
       guest_name: "John Doe",  // Replace with actual data
       guest_car_number: vehicleNumber,  // Replace with actual data
-      booking_start: startDateTime,  // Replace with actual data
-      booking_end: endDateTime,  // Replace with actual data
+      booking_start: startDateTime.toISOString(),  // Replace with actual data
+      booking_end: endDateTime.toISOString(),  // Replace with actual data
       status: "confirmed",
       };
 

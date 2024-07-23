@@ -1,5 +1,5 @@
 from .connection import session
-from .users_table_types import User
+from .db_types.users_table_types import User
 
 def create_new_user(username, password, is_manager):
     try:
