@@ -14,4 +14,5 @@ class Booking(Base):
     booking_end = Column(DateTime, nullable=False)
     status = Column(String, nullable=False)
     parking_id = Column(Integer, nullable=False)
-    # parking_id = Column(Integer, ForeignKey('parkings.parking_id'))
+    # parking_id = Column(Integer, ForeignKey('parkings.parking_id')) 
+    # TODO - check the issue with foreign key and enable it!
