@@ -2,6 +2,7 @@ from db.connection import session
 from db.db_types.booking_table_types import Booking
 from db.db_types.parking_availability_types import ParkingAvailability
 from sqlalchemy import and_
+from sqlalchemy.orm.exc import NoResultFound
 import datetime
 
 NUM_PARKING_SPACES = 100
@@ -35,7 +36,7 @@ def rearrange_bookings_and_insert(start_time, end_time, resident_id, guest_name,
 
                     # If it didn't work, undo the move
                     move_booking(booking, original_parking_id)
-    return None
+    return -1
 
 # Function not relevant for current basic flow
 def is_time_slot_available(parking_id, start_time, end_time):
@@ -73,18 +74,19 @@ def update_parking_availability(old_parking_id, start_time, end_time, new_parkin
     # Step 2: Merge adjacent available slots for old_parking_id
     merge_adjacent_slots(old_parking_id, start_time, end_time)
 
-    # Step 3: Update the availability for the new parking_id
-    new_occupied_slot = ParkingAvailability(
-        parking_id=new_parking_id,
-        start_time=start_time,
-        end_time=end_time,
-        status='Occupied',
-        booking_id=booking_id
-    )
-    session.add(new_occupied_slot)
+    if new_parking_id is not None:
+        # Step 3: Update the availability for the new parking_id
+        new_occupied_slot = ParkingAvailability(
+            parking_id=new_parking_id,
+            start_time=start_time,
+            end_time=end_time,
+            status='Occupied',
+            booking_id=booking_id
+        )
+        session.add(new_occupied_slot)
 
-    # Adjust available slots for the new parking_id
-    adjust_new_parking_availability(new_parking_id, start_time, end_time)
+        # Adjust available slots for the new parking_id
+        adjust_new_parking_availability(new_parking_id, start_time, end_time)
 
     session.commit()
 
@@ -105,7 +107,6 @@ def merge_adjacent_slots(parking_id, start_time, end_time):
             ParkingAvailability.status == 'Available'
         )
     ).first()
-
 
     # Merge adjacent slots
     if previous_slot and next_slot:
@@ -141,7 +142,6 @@ def adjust_new_parking_availability(parking_id, start_time, end_time):
             ParkingAvailability.status == 'Available'
         )
     ).first()
-
 
     if previous_slot and next_slot:
         previous_slot.end_time = start_time
@@ -205,8 +205,8 @@ def find_best_parking(available_parkings, start_time, end_time):
 
     for parking in available_parkings:
         # Calculate the gap before and after the requested time
-        pre_free_time = start_time - parking.start_time
-        post_free_time = parking.end_time - end_time
+        pre_free_time = (start_time - parking.start_time).total_seconds()
+        post_free_time = (parking.end_time - end_time).total_seconds()
         gap = pre_free_time + post_free_time
         # Update the best slot based on the smallest gap
         if gap < min_gap:
@@ -214,7 +214,8 @@ def find_best_parking(available_parkings, start_time, end_time):
             min_gap = gap
     return best_parking_id
 
-def allocate_parking(resident_id, guest_name, guest_car_number, start_time, end_time, status):
+
+def allocate_and_book_parking(resident_id, guest_name, guest_car_number, start_time, end_time, status):
     available_parkings = session.query(ParkingAvailability).filter(
         and_(
             ParkingAvailability.status == 'Available',
@@ -227,17 +228,90 @@ def allocate_parking(resident_id, guest_name, guest_car_number, start_time, end_
 
     if best_parking != -1:
         new_booking_id = create_booking(resident_id, guest_name, guest_car_number, start_time, end_time, status, best_parking)
-        return new_booking_id   
+        return (new_booking_id, best_parking) 
     else:
         # TODO enable rearranged feature in the future
         # rearranged = rearrange_bookings_and_insert(start_time, end_time, resident_id, guest_name, guest_car_number, status)
-        # if rearranged:
+        # if rearranged != -1:
         #     return rearranged
         # else:
+        return (-1, -1)
+
+def update_booking(booking_id, resident_id, guest_name, guest_car_number, start_time, end_time, status):
+    try:
+        # Fetch the existing booking
+        existing_booking = session.query(Booking).filter_by(id=booking_id).one()
+
+        # Check if start_time or end_time has changed
+        if existing_booking.booking_start != start_time or existing_booking.booking_end != end_time:
+            # Delete the existing booking
+            session.delete(existing_booking)
+            session.commit()
+
+            # Create a new booking with the updated details
+            new_booking_id = allocate_and_book_parking(
+                resident_id=resident_id,
+                guest_name=guest_name,
+                guest_car_number=guest_car_number,
+                start_time=start_time,
+                end_time=end_time,
+                status=status
+            )
+            return new_booking_id
+        else:
+            # Update the existing booking details without changing times
+            existing_booking.resident_id = resident_id
+            existing_booking.guest_name = guest_name
+            existing_booking.guest_car_number = guest_car_number
+            existing_booking.status = status
+            session.commit()
+            return existing_booking.id
+    except NoResultFound:
         return -1
 
+def remove_booking(booking_id):
+    try:
+        # Fetch the existing booking
+        existing_booking = session.query(Booking).filter_by(id=booking_id).one()
+
+        # Delete the existing booking
+        session.delete(existing_booking)
+        session.commit()
+
+        # Update ParkingAvailability table
+        update_parking_availability(
+            old_parking_id=existing_booking.parking_id,
+            start_time=existing_booking.booking_start,
+            end_time=existing_booking.booking_end,
+            new_parking_id=None,
+            booking_id=None
+        )
+        
+        return True
+    except NoResultFound:
+        return False
+
+
+def get_bookings_details(resident_id):
+    try:
+        # Fetch all existing bookings for the given resident_id
+        existing_bookings = session.query(Booking).filter_by(resident_id=resident_id).all()
+        bookings_list = [
+            {
+                "id": booking.id,
+                "vehicle_number": booking.guest_car_number,
+                "start_date_time": booking.booking_start.isoformat(),
+                "end_date_time": booking.booking_end.isoformat(),
+            }
+            for booking in existing_bookings
+        ]
+        return bookings_list
+    except Exception as e:
+        return None
+    
+
 if __name__ == "__main__":
-    allocate_parking(
+    allocate_and_book_parking(
         resident_id=1,
         guest_name="Elad2",
         guest_car_number="1234XYZ",

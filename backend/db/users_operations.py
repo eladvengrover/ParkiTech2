@@ -46,9 +46,9 @@ def login(username, password):
     
     # If user is found and password matches, return True
     if user:
-        return True
+        return user.id
     else:
-        return False
+        return -1
 
 
 if __name__ == "__main__":
