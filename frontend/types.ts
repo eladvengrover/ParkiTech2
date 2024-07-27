@@ -7,7 +7,7 @@ export type RootStackParamList = {
     CreateBooking: { tenantId: number };
     ViewBooking: { tenantId: number };
     GuestDirection: undefined
-    EditBooking: { tenantId: number, bookingId: number, vehicleNumber: string, startDateTime: Date, endDateTime: Date };
+    EditBooking: { tenantId: number, bookingId: number, vehicleNumber: string, startDateTime: Date, endDateTime: Date, parkingId: number};
 
   };
   

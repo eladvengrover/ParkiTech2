@@ -28,7 +28,7 @@ def CreateNewBooking(req: func.HttpRequest) -> func.HttpResponse:
         start_time = adjust_timezone_formatting(req_body['booking_start'])
         end_time = adjust_timezone_formatting(req_body['booking_end'])
 
-        new_booking_id, new_booking_id_parking = allocate_and_book_parking(
+        new_booking_id, new_booking_parking_id = allocate_and_book_parking(
             resident_id=req_body['resident_id'],
             guest_name=req_body['guest_name'],
             guest_car_number=req_body['guest_car_number'],
@@ -37,7 +37,7 @@ def CreateNewBooking(req: func.HttpRequest) -> func.HttpResponse:
             status=req_body['status']
         )
 
-        if new_booking_id != -1:
+        if new_booking_id != -1 and new_booking_parking_id != -1:
             logging.info(f"Booking created successfully: {req_body}")
             return func.HttpResponse(
                 json.dumps({"message": "Booking created successfully", "booking_id": new_booking_id, "parking_id": new_booking_id_parking}),
@@ -46,7 +46,7 @@ def CreateNewBooking(req: func.HttpRequest) -> func.HttpResponse:
             )
         else:
             return func.HttpResponse(
-                json.dumps({"error": "Failed to create booking. Please try again."}),
+                json.dumps({"error": "Failed to create booking. There is no available parking at the requested time"}),
                 status_code=500,
                 mimetype="application/json"
             )

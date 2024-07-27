@@ -55,131 +55,80 @@ def move_booking(booking, new_parking_id):
     original_parking_id = booking.parking_id
     booking.parking_id = new_parking_id
     session.commit()
-    # Update ParkingAvailability table
-    update_parking_availability(original_parking_id, booking.start_time, booking.end_time, new_parking_id, booking.booking_id)
+    # TODO - implement the Update ParkingAvailability table
 
-def update_parking_availability(old_parking_id, start_time, end_time, new_parking_id, booking_id):
-    # Step 1: Remove the old occupied slot
-    old_slots = session.query(ParkingAvailability).filter(
+def update_parking_availability_after_Create(parking_id, start_time, end_time, booking_id):
+    slot_contain_new_booking = session.query(ParkingAvailability).filter(
         and_(
-            ParkingAvailability.parking_id == old_parking_id,
-            ParkingAvailability.start_time == start_time,
-            ParkingAvailability.end_time == end_time,
-            ParkingAvailability.status == 'Occupied'
+            ParkingAvailability.parking_id == parking_id,
+            ParkingAvailability.start_time <= start_time,
+            ParkingAvailability.end_time >= end_time,
+            ParkingAvailability.status == 'Available',
+            ParkingAvailability.booking_id == None
         )
-    ).all()
-    for slot in old_slots:
-        session.delete(slot)
+    ).first()
+    
+    if slot_contain_new_booking:
+        if slot_contain_new_booking.start_time < start_time:
+            new_available_slot = ParkingAvailability(
+                parking_id=parking_id,
+                start_time=slot_contain_new_booking.start_time,
+                end_time=start_time,
+                status='Available',
+                booking_id=None
+            )
+            session.add(new_available_slot)
+            slot_contain_new_booking.start_time = start_time
 
-    # Step 2: Merge adjacent available slots for old_parking_id
-    merge_adjacent_slots(old_parking_id, start_time, end_time)
+        if slot_contain_new_booking.end_time > end_time:
+            new_available_slot = ParkingAvailability(
+                parking_id=parking_id,
+                start_time=end_time,
+                end_time=slot_contain_new_booking.end_time,
+                status='Available',
+                booking_id=None
+            )
+            session.add(new_available_slot)
+            slot_contain_new_booking.end_time = end_time
 
-    if new_parking_id is not None:
-        # Step 3: Update the availability for the new parking_id
-        new_occupied_slot = ParkingAvailability(
-            parking_id=new_parking_id,
-            start_time=start_time,
-            end_time=end_time,
-            status='Occupied',
-            booking_id=booking_id
+        slot_contain_new_booking.booking_id = booking_id
+        slot_contain_new_booking.status = 'Occupied'
+    
+    session.commit()
+
+def update_parking_availability_after_delete(parking_id, start_time, end_time, booking_id):
+    slot_contain_booking = session.query(ParkingAvailability).filter(
+        ParkingAvailability.booking_id == booking_id
+    ).first()
+    slot_before_booking = session.query(ParkingAvailability).filter(
+        and_(
+            ParkingAvailability.parking_id == parking_id,
+            ParkingAvailability.end_time == start_time
         )
-        session.add(new_occupied_slot)
+    ).first()
+    slot_after_booking = session.query(ParkingAvailability).filter(
+        and_(
+            ParkingAvailability.parking_id == parking_id,
+            ParkingAvailability.start_time == end_time
+        )
+    ).first()
 
-        # Adjust available slots for the new parking_id
-        adjust_new_parking_availability(new_parking_id, start_time, end_time)
+    if slot_before_booking and slot_before_booking.status == 'Available' and slot_after_booking and slot_after_booking.status == 'Available':
+        slot_before_booking.end_time = slot_after_booking.end_time
+        session.delete(slot_after_booking)
+        session.delete(slot_contain_booking)
+    elif slot_before_booking and slot_before_booking.status == 'Available':
+        slot_before_booking.end_time = end_time
+        session.delete(slot_contain_booking)
+    elif slot_after_booking and slot_after_booking.status == 'Available':
+        slot_after_booking.start_time = start_time
+        session.delete(slot_contain_booking)
+    else:
+        slot_contain_booking.status = 'Available'
+        slot_contain_booking.booking_id = None
 
     session.commit()
 
-def merge_adjacent_slots(parking_id, start_time, end_time):
-    # Find adjacent slots before and after the moved booking
-    previous_slot = session.query(ParkingAvailability).filter(
-        and_(
-            ParkingAvailability.parking_id == parking_id,
-            ParkingAvailability.end_time == start_time,
-            ParkingAvailability.status == 'Available'
-        )
-    ).first()
-
-    next_slot = session.query(ParkingAvailability).filter(
-        and_(
-            ParkingAvailability.parking_id == parking_id,
-            ParkingAvailability.start_time == end_time,
-            ParkingAvailability.status == 'Available'
-        )
-    ).first()
-
-    # Merge adjacent slots
-    if previous_slot and next_slot:
-        previous_slot.end_time = next_slot.end_time
-        session.delete(next_slot)
-    elif previous_slot:
-        previous_slot.end_time = end_time
-    elif next_slot:
-        next_slot.start_time = start_time
-    else:
-        new_available_slot = ParkingAvailability(
-            parking_id=parking_id,
-            start_time=start_time,
-            end_time=end_time,
-            status='Available'
-        )
-        session.add(new_available_slot)
-
-def adjust_new_parking_availability(parking_id, start_time, end_time):
-    # Adjust the available slots for the new parking lot
-    previous_slot = session.query(ParkingAvailability).filter(
-        and_(
-            ParkingAvailability.parking_id == parking_id,
-            ParkingAvailability.end_time == start_time,
-            ParkingAvailability.status == 'Available'
-        )
-    ).first()
-
-    next_slot = session.query(ParkingAvailability).filter(
-        and_(
-            ParkingAvailability.parking_id == parking_id,
-            ParkingAvailability.start_time == end_time,
-            ParkingAvailability.status == 'Available'
-        )
-    ).first()
-
-    if previous_slot and next_slot:
-        previous_slot.end_time = start_time
-        next_slot.start_time = end_time
-    elif previous_slot:
-        previous_slot.end_time = start_time
-        new_available_slot = ParkingAvailability(
-            parking_id=parking_id,
-            start_time=end_time,
-            end_time=previous_slot.end_time,
-            status='Available'
-        )
-        session.add(new_available_slot)
-    elif next_slot:
-        new_available_slot = ParkingAvailability(
-            parking_id=parking_id,
-            start_time=next_slot.start_time,
-            end_time=start_time,
-            status='Available'
-        )
-        session.add(new_available_slot)
-        next_slot.start_time = end_time
-    else:
-        if start_time > datetime.datetime.now():
-            new_available_slot_before = ParkingAvailability(
-                parking_id=parking_id,
-                start_time=datetime.datetime.now(),
-                end_time=start_time,
-                status='Available'
-            )
-            session.add(new_available_slot_before)
-        new_available_slot_after = ParkingAvailability(
-            parking_id=parking_id,
-            start_time=end_time,
-            end_time=datetime.datetime.now() + datetime.timedelta(days=14),  # Assuming 14 days as the future window
-            status='Available'
-        )
-        session.add(new_available_slot_after)
 
 def create_booking(resident_id, guest_name, guest_car_number, start_time, end_time, status, parking_id):
     new_booking = Booking(
@@ -193,7 +142,7 @@ def create_booking(resident_id, guest_name, guest_car_number, start_time, end_ti
     )
     session.add(new_booking)
     session.commit()
-    update_parking_availability(parking_id, start_time, end_time, parking_id, new_booking.id)
+    update_parking_availability_after_Create(parking_id, start_time, end_time, new_booking.id)
     return new_booking.id
 
 def find_best_parking(available_parkings, start_time, end_time):
@@ -221,8 +170,7 @@ def allocate_and_book_parking(resident_id, guest_name, guest_car_number, start_t
             ParkingAvailability.status == 'Available',
             ParkingAvailability.start_time <= start_time,
             ParkingAvailability.end_time >= end_time
-        )
-    ).all()
+        )).all()
 
     best_parking = find_best_parking(available_parkings, start_time, end_time)
 
@@ -245,8 +193,7 @@ def update_booking(booking_id, resident_id, guest_name, guest_car_number, start_
         # Check if start_time or end_time has changed
         if existing_booking.booking_start != start_time or existing_booking.booking_end != end_time:
             # Delete the existing booking
-            session.delete(existing_booking)
-            session.commit()
+            remove_booking(booking_id)
 
             # Create a new booking with the updated details
             new_booking_id = allocate_and_book_parking(
@@ -257,7 +204,7 @@ def update_booking(booking_id, resident_id, guest_name, guest_car_number, start_
                 end_time=end_time,
                 status=status
             )
-            return new_booking_id
+            return new_booking_id #TODO - what happens if updating doesnt success?
         else:
             # Update the existing booking details without changing times
             existing_booking.resident_id = resident_id
@@ -274,19 +221,22 @@ def remove_booking(booking_id):
         # Fetch the existing booking
         existing_booking = session.query(Booking).filter_by(id=booking_id).one()
 
+        existing_booking_parking_id = existing_booking.parking_id
+        existing_booking_start_time = existing_booking.booking_start
+        existing_booking_end_time = existing_booking.booking_end   
+
         # Delete the existing booking
         session.delete(existing_booking)
         session.commit()
 
         # Update ParkingAvailability table
-        update_parking_availability(
-            old_parking_id=existing_booking.parking_id,
-            start_time=existing_booking.booking_start,
-            end_time=existing_booking.booking_end,
-            new_parking_id=None,
-            booking_id=None
+        update_parking_availability_after_delete(
+            parking_id=existing_booking_parking_id,
+            start_time=existing_booking_start_time,
+            end_time=existing_booking_end_time,
+            booking_id=booking_id
         )
-        
+
         return True
     except NoResultFound:
         return False

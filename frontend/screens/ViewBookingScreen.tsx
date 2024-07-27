@@ -68,7 +68,8 @@ const ViewBookingScreen: React.FC<Props> = ({ navigation }) => {
       bookingId: item.id, 
       vehicleNumber: item.vehicle_number, 
       startDateTime: item.start_date_time, 
-      endDateTime: item.end_date_time 
+      endDateTime: item.end_date_time,
+      parkingId: item.parking_id
     });
   };
 
@@ -86,6 +87,7 @@ const ViewBookingScreen: React.FC<Props> = ({ navigation }) => {
               <Text>Vehicle Number: {item.vehicle_number}</Text>
               <Text>Start Date: {formatDateTime(item.start_date_time)}</Text>
               <Text>End Date: {formatDateTime(item.end_date_time)}</Text>
+              <Text>Parking ID: {item.parking_id}</Text>
             </TouchableOpacity>
           )}
         />

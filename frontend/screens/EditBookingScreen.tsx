@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, Button } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import commonStyles from './commonStyles';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -26,11 +27,14 @@ type EditBookingScreenRouteProp = RouteProp<RootStackParamList, 'EditBooking'>;
 
 const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<EditBookingScreenRouteProp>();
-  const { tenantId, bookingId, vehicleNumber: initialVehicleNumber, startDateTime: initialStartDateTime, endDateTime: initialEndDateTime } = route.params;
+  const { tenantId, bookingId, vehicleNumber: initialVehicleNumber, startDateTime: initialStartDateTime, endDateTime: initialEndDateTime, parkingId: initialParkingId} = route.params;
 
   const [vehicleNumber, setVehicleNumber] = useState(initialVehicleNumber);
   const [startDateTime, setStartDateTime] = useState(new Date(initialStartDateTime));
   const [endDateTime, setEndDateTime] = useState(new Date(initialEndDateTime));
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+  const [parkingId, setParkingId] = useState(initialParkingId);
 
   const handleSave = async () => {
     const validationRes = validateBooking();
@@ -148,6 +152,18 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const handleStartChange = (event: any, selectedDate: Date | undefined) => {
+    const currentDate = selectedDate || startDateTime;
+    setShowStartPicker(false);
+    setStartDateTime(currentDate);
+  };
+
+  const handleEndChange = (event: any, selectedDate: Date | undefined) => {
+    const currentDate = selectedDate || endDateTime;
+    setShowEndPicker(false);
+    setEndDateTime(currentDate);
+  };
+
   return (
     <View style={commonStyles.container}>
       <Text style={commonStyles.title}>Edit Booking</Text>
@@ -157,18 +173,28 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
         value={vehicleNumber}
         onChangeText={setVehicleNumber}
       />
-      <TextInput
-        style={commonStyles.input}
-        placeholder="Start Date and Time"
-        value={formatDateTime(startDateTime)}
-        editable={false}
-      />
-      <TextInput
-        style={commonStyles.input}
-        placeholder="End Date and Time"
-        value={formatDateTime(endDateTime)}
-        editable={false}
-      />
+      <Button title="Select Start Date and Time" onPress={() => setShowStartPicker(true)} />
+      {showStartPicker && (
+        <DateTimePicker
+          value={startDateTime}
+          mode="datetime"
+          display="default"
+          onChange={handleStartChange}
+        />
+      )}
+      <Text style={commonStyles.dateText}>Selected Start: {formatDateTime(startDateTime)}</Text>
+      
+      <Button title="Select End Date and Time" onPress={() => setShowEndPicker(true)} />
+      {showEndPicker && (
+        <DateTimePicker
+          value={endDateTime}
+          mode="datetime"
+          display="default"
+          onChange={handleEndChange}
+        />
+      )}
+      <Text style={commonStyles.dateText}>Selected End: {formatDateTime(endDateTime)}</Text>
+      <Text>Parking ID: {parkingId}</Text>
       <TouchableOpacity style={commonStyles.button} onPress={handleSave}>
         <Text style={commonStyles.buttonText}>Save</Text>
       </TouchableOpacity>
