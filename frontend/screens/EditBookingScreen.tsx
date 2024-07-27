@@ -194,8 +194,8 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
         />
       )}
       <Text style={commonStyles.dateText}>Selected End: {formatDateTime(endDateTime)}</Text>
-      <Text>Parking ID: {parkingId}</Text>
-      <TouchableOpacity style={commonStyles.button} onPress={handleSave}>
+      <Text style={commonStyles.dateText}>Parking ID: {parkingId}</Text>
+            <TouchableOpacity style={commonStyles.button} onPress={handleSave}>
         <Text style={commonStyles.buttonText}>Save</Text>
       </TouchableOpacity>
       <TouchableOpacity style={commonStyles.deleteButton} onPress={handleDelete}>

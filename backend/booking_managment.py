@@ -252,6 +252,7 @@ def get_bookings_details(resident_id):
                 "vehicle_number": booking.guest_car_number,
                 "start_date_time": booking.booking_start.isoformat(),
                 "end_date_time": booking.booking_end.isoformat(),
+                "parking_id": booking.parking_id
             }
             for booking in existing_bookings
         ]
