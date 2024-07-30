@@ -1,26 +1,27 @@
-// screens/TenantMainScreen.tsx
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import commonStyles from './commonStyles';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types'; 
+import { RootStackParamList } from '../types';
+import { RouteProp, useRoute } from '@react-navigation/native';
 
-
-type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'TenantMain'>;
+type TenantMainScreenNavigationProp = StackNavigationProp<RootStackParamList, 'TenantMain'>;
+type TenantMainScreenRouteProp = RouteProp<RootStackParamList, 'TenantMain'>;
 
 type Props = {
-  navigation: HomeScreenNavigationProp;
+  navigation: TenantMainScreenNavigationProp;
 };
 
-
 const TenantMainScreen: React.FC<Props> = ({ navigation }) => {
+  const route = useRoute<TenantMainScreenRouteProp>();
+  const { tenantId: tenantId } = route.params;
 
   const handleCreateBooking = () => {
-    navigation.navigate('CreateBooking');
+    navigation.navigate('CreateBooking', { tenantId: tenantId });
   };
 
   const handleViewBooking = () => {
-    navigation.navigate('ViewBooking');
+    navigation.navigate('ViewBooking', { tenantId: tenantId });
   };
 
   return (
@@ -35,6 +36,5 @@ const TenantMainScreen: React.FC<Props> = ({ navigation }) => {
     </View>
   );
 };
-
 
 export default TenantMainScreen;
