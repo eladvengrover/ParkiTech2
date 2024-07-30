@@ -86,6 +86,9 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
     console.log('Order End Date and Time:', endDateTime);
     console.log('------------------------------------');
 
+    console.log(startDateTime);
+    console.log(endDateTime);
+
     const bookingData = {
       resident_id: tenantId,
       guest_name: "Shahar",  // TODO - Replace with actual data
