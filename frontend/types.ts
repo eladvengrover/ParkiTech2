@@ -3,11 +3,11 @@ export type RootStackParamList = {
     Home: undefined;
     Login: undefined;
     Guest: undefined;
-    TenantMain: undefined;
-    CreateBooking: undefined;
-    ViewBooking: undefined;
+    TenantMain: { tenantId: number };
+    CreateBooking: { tenantId: number };
+    ViewBooking: { tenantId: number };
     GuestDirection: undefined
-    EditBooking: { id: string };
+    EditBooking: { tenantId: number, bookingId: number, vehicleNumber: string, startDateTime: Date, endDateTime: Date, parkingId: number};
 
   };
   

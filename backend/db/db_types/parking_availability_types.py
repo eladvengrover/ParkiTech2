@@ -12,7 +12,7 @@ class ParkingAvailability(Base):
     # TODO - check the issue with foreign key and enable it!
     start_time = Column(DateTime)
     end_time = Column(DateTime)
-    status = Column(String)
+    status = Column(String) #TODO - consider if needs both status and booking ID
     booking_id = Column(Integer, nullable=True)
     # booking_id = Column(Integer, ForeignKey('bookings.booking_id'), nullable=True)
     # TODO - check the issue with foreign key and enable it!
