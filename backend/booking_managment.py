@@ -216,6 +216,23 @@ def update_booking(booking_id, resident_id, guest_name, guest_car_number, start_
     except NoResultFound:
         return -1
 
+def remove_bookings_by_user_id(user_id):
+    try:
+        # Fetch all bookings associated with the given user ID
+        existing_bookings = session.query(Booking).filter_by(resident_id=user_id).all()
+        
+        # Iterate over the bookings and remove each one
+        for booking in existing_bookings:
+            remove_booking(booking.id)
+        
+        session.commit()  # Commit the transaction
+        print(f"All bookings for user ID {user_id} have been removed.")
+    
+    except Exception as e:
+        session.rollback()  # Roll back the transaction in case of error
+        print(f"An error occurred while removing bookings for user ID {user_id}: {e}")
+
+
 def remove_booking(booking_id):
     try:
         # Fetch the existing booking

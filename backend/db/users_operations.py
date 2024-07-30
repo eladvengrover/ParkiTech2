@@ -1,5 +1,6 @@
 from .connection import session
 from .db_types.users_table_types import User
+from booking_managment import remove_bookings_by_user_id
 
 def remove_user(username):
     try:
@@ -14,6 +15,9 @@ def remove_user(username):
         # If username exists, remove it
         session.delete(existing_user)
         session.commit()
+
+        remove_bookings_by_user_id(user_id)
+
         print(f"User '{username}' has been removed")
         return user_id
     except Exception as e:
