@@ -1,4 +1,3 @@
-// screens/LoginScreen.tsx
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import commonStyles from './commonStyles';
@@ -14,6 +13,17 @@ type Props = {
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleSuccessLogin = (responseBody: any) => {
+    const tenantId = responseBody.tenant_id;
+    const isManager = responseBody.is_manager;
+
+    if (isManager) {
+      navigation.navigate('ManagerMain');
+    } else {
+      navigation.navigate('TenantMain', { tenantId: tenantId });
+    }
+  };
 
   const handleLoginSubmit = async () => {
     console.log('Logging in with:', username, password);
@@ -51,9 +61,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         console.log('Response Body:', responseBody);
 
         if (responseStatus == 200) {
-            const tenantId = responseBody.tenant_id;
-            console.log('Tenant ID:', tenantId);
-            navigation.navigate('TenantMain', { tenantId: tenantId }); // Pass tenantId as a parameter
+            handleSuccessLogin(responseBody);
         } else {
             Alert.alert(
                 "Login Failed",

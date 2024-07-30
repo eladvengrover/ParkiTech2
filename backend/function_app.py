@@ -3,7 +3,7 @@ import azure.functions as func
 import logging
 from db.booking_operations import add_booking
 from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details 
-from db.users_operations import login
+from db.users_operations import login, is_user_manager, create_new_user, remove_user
 from datetime import datetime
 from helpers import adjust_timezone_formatting
 
@@ -155,7 +155,7 @@ def UserLogin(req: func.HttpRequest) -> func.HttpResponse:
         login_result = login(username, password)
         if login_result != -1:
             return func.HttpResponse(
-                body=json.dumps({"tenant_id": login_result}),
+                body=json.dumps({"tenant_id": login_result, "is_manager": is_user_manager(username)}),
                 status_code=200,
                 mimetype="application/json"
             )
@@ -173,6 +173,85 @@ def UserLogin(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
             mimetype="application/json"
         )
+    
+
+@app.route(route="CreateNewUser", auth_level=func.AuthLevel.ANONYMOUS)
+def CreateNewUser(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: CreateNewUser')
+
+    try:
+        req_body = req.get_json()
+        logging.info(req_body)
+    except ValueError:
+        return func.HttpResponse(
+            json.dumps({"error": "Invalid request"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    username = req_body.get('username')
+    password = req_body.get('password')
+    is_manager = req_body.get('is_manager')
+
+    if not username or not password:
+        logging.error("Error in CreateNewUser, username/password required.")
+        return func.HttpResponse(
+            json.dumps({"error": "username/password required"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    try:
+        new_user_id = create_new_user(username, password, is_manager)
+        if new_user_id != -1:
+            return func.HttpResponse(
+                body=json.dumps({"user_id": new_user_id, "password": password, "is_manager": is_manager}),
+                status_code=200,
+                mimetype="application/json"
+            )
+        else:
+            logging.error("Error in CreateNewUser: username/password are incorrect.")
+            return func.HttpResponse(
+                json.dumps({"error": "username/password are incorrect"}),
+                status_code=403,
+                mimetype="application/json"
+            )
+    except Exception as e:
+        logging.error(f"Error in CreateNewUser: {e}")
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}),
+            status_code=500,
+            mimetype="application/json"
+        )
+    
+
+
+@app.route(route="RemoveUser", auth_level=func.AuthLevel.ANONYMOUS)
+def RemoveUser(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: RemoveUser')
+
+    try:
+        req_body = req.get_json()
+        logging.info(req_body)
+    except ValueError:
+        return func.HttpResponse("Invalid Request", status_code=404)
+
+    username = req_body.get('username')
+
+    if not username:
+        logging.error("Error in RemoveUser, username required.")
+        return func.HttpResponse("Username is required", status_code=404)
+
+    try:
+        removed_user_id = remove_user(username)
+        if removed_user_id != -1:
+            return func.HttpResponse("User removed successfully.", status_code=200)
+        else:
+            logging.error("Error in RemoveUser: username is incorrect.")
+            return func.HttpResponse("Username is incorrect", status_code=404)
+    except Exception as e:
+        logging.error(f"Error in RemoveUser: {e}")
+        return func.HttpResponse(f"Error: {str(e)}", status_code=500)
     
 
 
