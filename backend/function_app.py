@@ -5,6 +5,7 @@ import requests
 import logging
 import time
 import io
+import re  # Import the regular expressions module
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
 from msrest.authentication import CognitiveServicesCredentials
@@ -321,10 +322,8 @@ def ReadLicensePlate(req: func.HttpRequest) -> func.HttpResponse:
     if not image_url:
         return func.HttpResponse("Please pass an image URL in the request body", status_code=400)
 
-    subscription_key = "1436a286283042e4bae9b93e90faf495"
-    endpoint = "https://platerecognition.cognitiveservices.azure.com/"
-
-
+    subscription_key = os.getenv("COMPUTER_VISION_SUBSCRIPTION_KEY")
+    endpoint = os.getenv("COMPUTER_VISION_ENDPOINT")
 
     if not subscription_key or not endpoint:
         return func.HttpResponse("Computer Vision subscription key and endpoint must be set as environment variables.", status_code=500)
@@ -354,7 +353,10 @@ def ReadLicensePlate(req: func.HttpRequest) -> func.HttpResponse:
             for text_result in read_result.analyze_result.read_results:
                 for line in text_result.lines:
                     logging.info(f"Extracted text from image: {line.text}")
-                    return func.HttpResponse(f"Extracted text from image: {line.text}", status_code=200)
+                    # Extract only numeric characters
+                    numeric_text = ''.join(re.findall(r'\d+', line.text))
+                    if numeric_text:
+                        return func.HttpResponse(f"Extracted numeric text from image: {numeric_text}", status_code=200)
 
     except Exception as e:
         logging.error(f"Error processing image: {e}")
