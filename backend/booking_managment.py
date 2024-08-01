@@ -289,7 +289,8 @@ def get_parkings_statuses():
         parking_status_list = [
             {
                 "parking_id": parking.parking_id,
-                "status": parking.status
+                "status": parking.status,
+                "booking_id": parking.booking_id
             }
             for parking in parking_status
         ]        

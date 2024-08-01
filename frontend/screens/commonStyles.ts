@@ -59,6 +59,41 @@ const commonStyles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 10,
   },
+
+  // Added for the ParkingStatusScreen
+  table: {
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    backgroundColor: '#f2f2f2',
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+  },
+  headerCell: {
+    flex: 1,
+    padding: 10,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  row: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+  },
+  cell: {
+    flex: 1,
+    padding: 10,
+    textAlign: 'center',
+  },
+  occupied: {
+    backgroundColor: '#ffcccc', // Light red for occupied parking
+  },
+  free: {
+    backgroundColor: '#ccffcc', // Light green for free parking
+  },
 });
 
 export default commonStyles;

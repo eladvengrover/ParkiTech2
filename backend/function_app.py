@@ -301,8 +301,8 @@ def GetBookingsDetails(req: func.HttpRequest) -> func.HttpResponse:
         )
     
 @app.route(route="GetParkingsStatuses", auth_level=func.AuthLevel.ANONYMOUS)
-def GetParkingsStatus(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request: GetParkingsStatus.')
+def GetParkingsStatuses(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: GetParkingsStatuses.')
 
     try:
         req_body = req.get_json()
