@@ -2,7 +2,7 @@ import json
 import azure.functions as func
 import logging
 from db.booking_operations import add_booking
-from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details 
+from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details, get_parkings_statuses 
 from db.users_operations import login, is_user_manager, create_new_user, remove_user
 from datetime import datetime
 from helpers import adjust_timezone_formatting
@@ -289,6 +289,43 @@ def GetBookingsDetails(req: func.HttpRequest) -> func.HttpResponse:
         else:
             return func.HttpResponse(
                 json.dumps({"error": f"Bookings of resident ID {resident_id} not found."}),
+                status_code=404,
+                mimetype="application/json"
+            )
+    except Exception as e:
+        logging.error(f"Error in GetBookingsDetails: {e}")
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}),
+            status_code=500,
+            mimetype="application/json"
+        )
+    
+@app.route(route="GetParkingsStatuses", auth_level=func.AuthLevel.ANONYMOUS)
+def GetParkingsStatus(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: GetParkingsStatus.')
+
+    try:
+        req_body = req.get_json()
+        logging.info(req_body)
+    except ValueError:
+        return func.HttpResponse(
+            json.dumps({"error": "Invalid request"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    try:
+        parkings_statuses = get_parkings_statuses()
+        if parkings_statuses:
+            logging.info(f"parking statuses details fetched successfully")
+            return func.HttpResponse(
+                body=json.dumps(parkings_statuses),
+                status_code=200,
+                mimetype="application/json"
+            )
+        else:
+            return func.HttpResponse(
+                json.dumps({"error": f"Parking statuses not found."}),
                 status_code=404,
                 mimetype="application/json"
             )

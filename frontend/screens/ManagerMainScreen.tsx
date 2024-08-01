@@ -4,8 +4,10 @@ import commonStyles from './commonStyles';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import AddUserModal from './AddUserComponent';
+import { RouteProp } from '@react-navigation/native';
 
 type ManagerMainScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ManagerMain'>;
+type ManagerMainScreenRouteProp = RouteProp<RootStackParamList, 'TenantMain'>;
 
 type Props = {
   navigation: ManagerMainScreenNavigationProp;
@@ -108,7 +110,11 @@ const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
       <TouchableOpacity style={commonStyles.button} onPress={handleRemoveUser}>
         <Text style={commonStyles.buttonText}>Remove User</Text>
       </TouchableOpacity>
-      {/* Other buttons */}
+      
+      <TouchableOpacity style={commonStyles.button} onPress={() => navigation.navigate('ParkingStatus')}>
+        <Text style={commonStyles.buttonText}>View Parking Status</Text>
+      </TouchableOpacity>
+
       <AddUserModal
         visible={isAddUserModalVisible}
         onClose={() => setAddUserModalVisible(false)}

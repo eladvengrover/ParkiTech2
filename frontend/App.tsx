@@ -11,6 +11,7 @@ import CreateBookingScreen from './screens/CreateBookingScreen';
 import ViewBookingScreen from './screens/ViewBookingScreen';
 import GuestDirectionScreen from './screens/GuestDirectionScreen';
 import EditBookingScreen from './screens/EditBookingScreen';
+import ParkingStatusScreen from './screens/ParkingStatusScreen';
 
 
 const Stack = createStackNavigator();
@@ -28,7 +29,7 @@ function App() {
         <Stack.Screen name="ViewBooking" component={ViewBookingScreen} />
         <Stack.Screen name="GuestDirection" component={GuestDirectionScreen} />
         <Stack.Screen name="EditBooking" component={EditBookingScreen} />
-
+        <Stack.Screen name="ParkingStatus" component={ParkingStatusScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
