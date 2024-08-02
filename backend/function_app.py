@@ -1,9 +1,18 @@
 import json
 import azure.functions as func
+import os
+import requests
 import logging
+import time
+import io
+import re  # Import the regular expressions module
+from azure.cognitiveservices.vision.computervision import ComputerVisionClient
+from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
+from msrest.authentication import CognitiveServicesCredentials
 from db.booking_operations import add_booking
 from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details 
 from db.users_operations import login, is_user_manager, create_new_user, remove_user
+from db.booking_operations import search_booking_by_license_plate  # Import the new function
 from datetime import datetime
 from helpers import adjust_timezone_formatting
 
@@ -305,3 +314,63 @@ def GetBookingsDetails(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
             mimetype="application/json"
         )
+    
+@app.route(route="ReadLicensePlate", methods=['POST'], auth_level=func.AuthLevel.ANONYMOUS)
+def ReadLicensePlate(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: ReadLicensePlate.')
+
+    try:
+        req_body = req.get_json()
+        logging.info(f"Request body: {req_body}")
+    except ValueError:
+        return func.HttpResponse("Invalid request body", status_code=400)
+
+    image_url = req_body.get('image_url')
+    if not image_url:
+        return func.HttpResponse("Please pass an image URL in the request body", status_code=400)
+
+    subscription_key = os.getenv("COMPUTER_VISION_SUBSCRIPTION_KEY")
+    endpoint = os.getenv("COMPUTER_VISION_ENDPOINT")
+
+    if not subscription_key or not endpoint:
+        return func.HttpResponse("Computer Vision subscription key and endpoint must be set as environment variables.", status_code=500)
+
+    computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
+
+    try:
+        response = requests.get(image_url)
+        response.raise_for_status()
+        image_data = io.BytesIO(response.content)  # Convert bytes to a file-like object
+    except Exception as e:
+        logging.error(f"Error fetching image from URL: {e}")
+        return func.HttpResponse(f"Error fetching image from URL: {e}", status_code=500)
+
+    try:
+        read_response = computervision_client.read_in_stream(image_data, raw=True)
+        read_operation_location = read_response.headers["Operation-Location"]
+        operation_id = read_operation_location.split("/")[-1]
+
+        while True:
+            read_result = computervision_client.get_read_result(operation_id)
+            if read_result.status not in ['notStarted', 'running']:
+                break
+            time.sleep(1)
+
+        if read_result.status == OperationStatusCodes.succeeded:
+            for text_result in read_result.analyze_result.read_results:
+                for line in text_result.lines:
+                    logging.info(f"Extracted text from image: {line.text}")
+                    # Extract only numeric characters
+                    numeric_text = ''.join(re.findall(r'\d+', line.text))
+                    if numeric_text:
+                        booking = search_booking_by_license_plate(numeric_text)
+                        if booking:
+                            return func.HttpResponse(f"Booking found for license plate {numeric_text}: {booking}", status_code=200)
+                        else:
+                            return func.HttpResponse(f"No booking found for license plate {numeric_text}", status_code=404)
+
+    except Exception as e:
+        logging.error(f"Error processing image: {e}")
+        return func.HttpResponse(f"Error processing image: {e}", status_code=500)
+
+    return func.HttpResponse("No license plate found", status_code=404)

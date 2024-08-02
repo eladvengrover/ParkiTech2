@@ -5,3 +5,4 @@
 azure-functions
 sqlalchemy
 pyodbc
+azure-cognitiveservices-vision-computervision
