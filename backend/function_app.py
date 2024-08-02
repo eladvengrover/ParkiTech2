@@ -12,6 +12,7 @@ from msrest.authentication import CognitiveServicesCredentials
 from db.booking_operations import add_booking
 from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details 
 from db.users_operations import login, is_user_manager, create_new_user, remove_user
+from db.booking_operations import search_booking_by_license_plate  # Import the new function
 from datetime import datetime
 from helpers import adjust_timezone_formatting
 
@@ -356,7 +357,11 @@ def ReadLicensePlate(req: func.HttpRequest) -> func.HttpResponse:
                     # Extract only numeric characters
                     numeric_text = ''.join(re.findall(r'\d+', line.text))
                     if numeric_text:
-                        return func.HttpResponse(f"Extracted numeric text from image: {numeric_text}", status_code=200)
+                        booking = search_booking_by_license_plate(numeric_text)
+                        if booking:
+                            return func.HttpResponse(f"Booking found for license plate {numeric_text}: {booking}", status_code=200)
+                        else:
+                            return func.HttpResponse(f"No booking found for license plate {numeric_text}", status_code=404)
 
     except Exception as e:
         logging.error(f"Error processing image: {e}")

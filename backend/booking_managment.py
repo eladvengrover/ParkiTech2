@@ -287,3 +287,15 @@ if __name__ == "__main__":
         end_time=datetime.datetime.now() + datetime.timedelta(days=1) + datetime.timedelta(hours=2),
         status="confirmed"
     )
+
+def search_booking_by_license_plate(license_plate):
+    current_time = datetime.now()
+    booking = session.query(Booking).filter(
+        and_(
+            Booking.guest_car_number == license_plate,
+            Booking.booking_start <= current_time,
+            Booking.booking_end >= current_time,
+            Booking.status == 'confirmed'
+        )
+    ).first()
+    return booking
