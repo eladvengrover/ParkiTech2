@@ -172,6 +172,9 @@ def allocate_and_book_parking(resident_id, guest_name, guest_car_number, start_t
             ParkingAvailability.end_time >= end_time
         )).all()
 
+    if not available_parkings:
+        return (-5, -1)  # Return -5 if no available parkings found
+
     best_parking = find_best_parking(available_parkings, start_time, end_time)
 
     if best_parking != -1:

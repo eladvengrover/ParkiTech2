@@ -37,16 +37,22 @@ def CreateNewBooking(req: func.HttpRequest) -> func.HttpResponse:
             status=req_body['status']
         )
 
-        if new_booking_id != -1:
+        if new_booking_id > 0:
             logging.info(f"Booking created successfully: {req_body}")
             return func.HttpResponse(
                 json.dumps({"message": "Booking created successfully", "booking_id": new_booking_id, "parking_id": new_booking_id_parking}),
                 status_code=201,
                 mimetype="application/json"
             )
-        else:
+        elif new_booking_id == -1:
             return func.HttpResponse(
                 json.dumps({"error": "Failed to create booking. Please try again."}),
+                status_code=500,
+                mimetype="application/json"
+            )
+        elif new_booking_id == -5:
+            return func.HttpResponse(
+                json.dumps({"error": "Failed to create booking. No available parking slots."}),
                 status_code=500,
                 mimetype="application/json"
             )
