@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from .connection import session
 from .db_types.booking_table_types import Booking
 
@@ -26,7 +26,7 @@ def update_booking(booking_id, **kwargs):
         print(f"Booking with ID: {booking_id} not found.")
 
 def search_booking_by_license_plate(license_plate):
-    current_time = datetime.now()
+    current_time = datetime.now() + timedelta(hours=3)
     booking = session.query(Booking).filter_by(guest_car_number=license_plate).filter(
         Booking.booking_start <= current_time,
         Booking.booking_end >= current_time,
