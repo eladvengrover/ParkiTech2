@@ -7,6 +7,7 @@ import commonStyles from './commonStyles';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Guest'>;
 
@@ -21,6 +22,7 @@ const URIEL_ACOSTA_COORDINATES = {
 
 const GuestScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{ latitude: number, longitude: number } | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
 
@@ -31,6 +33,7 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
           Alert.alert('Permission to access location was denied');
+          setLocationLoading(false);
           return;
         }
 
@@ -50,6 +53,8 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
       } catch (error) {
         console.error(error);
         Alert.alert('Failed to get location');
+      } finally {
+        setLocationLoading(false);
       }
     };
 
@@ -68,30 +73,73 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleContinue = async () => {
-    if (!userLocation) {
-      setLoading(true);
+    if (!imageUri) {
+      Alert.alert("Please upload an image before continuing.");
       return;
     }
 
-    const distance = getDistance(userLocation.latitude, userLocation.longitude, URIEL_ACOSTA_COORDINATES.latitude, URIEL_ACOSTA_COORDINATES.longitude);
+    setLoading(true);
 
-    console.log("Distance to Uriel Acosta Street:", distance, "meters");
-
-    if (distance <= 300) { // 300 meters proximity check
-      Alert.alert('You are within 300 meters of Uriel Acosta Street');
-      navigation.navigate('GuestDirection');
-    } else {
-      Alert.alert('You are too far from Uriel Acosta Street');
+    // Check if location is available
+    if (!userLocation) {
+      Alert.alert('Location Issue', 'Location not available. Please try again.');
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
+    try {
+      // Check if the user is near the hard-coded location
+      const distance = getDistance(userLocation.latitude, userLocation.longitude, URIEL_ACOSTA_COORDINATES.latitude, URIEL_ACOSTA_COORDINATES.longitude);
+
+      if (distance > 300) {
+        Alert.alert('Location Issue', 'You are too far from Uriel Acosta Street.');
+        setLoading(false);
+        return;
+      }
+
+      // Create FormData and append the image
+      const formData = new FormData();
+      formData.append('image', {
+        uri: imageUri,
+        name: 'license_plate.jpg',
+        type: 'image/jpeg',
+      } as any);
+
+      // Send the request to the Azure Function using fetch
+      const response = await fetch('https://parkitect.azurewebsites.net/api/ReadLicensePlate?', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData,
+      });
+
+      const contentType = response.headers.get('content-type');
+      let responseData;
+      if (contentType && contentType.indexOf('application/json') !== -1) {
+        responseData = await response.json();
+      } else {
+        responseData = await response.text();
+      }
+
+      console.log("Azure Function Response:", responseData);
+
+      // Check the response from the server
+      if (typeof responseData === 'string' && responseData.startsWith('Booking found for license plate')) {
+        Alert.alert('Success', responseData.split(":")[0]);
+        navigation.navigate('GuestDirection');
+      } else if (typeof responseData === 'string' && responseData.startsWith('No booking found')) {
+        Alert.alert('No Booking', 'There is no booking available for this license plate.');
+      } else {
+        Alert.alert('Error', 'There was an issue processing your request. Please try again.');
+      }
+    } catch (error) {
+      console.error("Error sending request:", error);
+      Alert.alert('Error', 'Failed to send image to server.');
+    } finally {
+      setLoading(false);
+    }
   };
-
-  useEffect(() => {
-    if (userLocation && loading) {
-      handleContinue();
-    }
-  }, [userLocation]);
 
   const pickImage = async () => {
     // Request permission to access the media library
@@ -118,8 +166,17 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
     setImageUri(null);
   };
 
+  const isButtonDisabled = loading || locationLoading || !imageUri;
+
   return (
     <View style={commonStyles.container}>
+      {locationLoading && (
+        <View style={styles.locationLoadingContainer}>
+          <Text style={styles.locationLoadingText}>Fetching location...</Text>
+          <ActivityIndicator size="small" color="#0000ff" />
+        </View>
+      )}
+
       <Text style={commonStyles.title}>Upload Your License Plate Photo</Text>
 
       {imageUri ? (
@@ -140,7 +197,15 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
       )}
 
-      <TouchableOpacity style={[commonStyles.button, styles.continueButton]} onPress={handleContinue} disabled={loading}>
+      <TouchableOpacity
+        style={[
+          commonStyles.button,
+          styles.continueButton,
+          { backgroundColor: isButtonDisabled ? '#cccccc' : '#007bff' },
+        ]}
+        onPress={handleContinue}
+        disabled={isButtonDisabled}
+      >
         {loading ? (
           <ActivityIndicator size="small" color="#FFFFFF" />
         ) : (
@@ -154,6 +219,16 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
 export default GuestScreen;
 
 const styles = StyleSheet.create({
+  locationLoadingContainer: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  locationLoadingText: {
+    marginRight: 10,
+  },
   iconButton: {
     marginTop: 10,
     justifyContent: 'center',

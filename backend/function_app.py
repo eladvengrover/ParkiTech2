@@ -320,14 +320,15 @@ def ReadLicensePlate(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request: ReadLicensePlate.')
 
     try:
-        req_body = req.get_json()
-        logging.info(f"Request body: {req_body}")
-    except ValueError:
-        return func.HttpResponse("Invalid request body", status_code=400)
+        # Get the uploaded image file
+        image_file = req.files.get('image')
+        if not image_file:
+            return func.HttpResponse("Please upload an image file", status_code=400)
+        image_data = image_file.stream.read()  # Read the file data
 
-    image_url = req_body.get('image_url')
-    if not image_url:
-        return func.HttpResponse("Please pass an image URL in the request body", status_code=400)
+    except Exception as e:
+        logging.error(f"Error reading uploaded file: {e}")
+        return func.HttpResponse(f"Error reading uploaded file: {e}", status_code=400)
 
     subscription_key = os.getenv("COMPUTER_VISION_SUBSCRIPTION_KEY")
     endpoint = os.getenv("COMPUTER_VISION_ENDPOINT")
@@ -338,15 +339,8 @@ def ReadLicensePlate(req: func.HttpRequest) -> func.HttpResponse:
     computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
 
     try:
-        response = requests.get(image_url)
-        response.raise_for_status()
-        image_data = io.BytesIO(response.content)  # Convert bytes to a file-like object
-    except Exception as e:
-        logging.error(f"Error fetching image from URL: {e}")
-        return func.HttpResponse(f"Error fetching image from URL: {e}", status_code=500)
-
-    try:
-        read_response = computervision_client.read_in_stream(image_data, raw=True)
+        # Process the image data
+        read_response = computervision_client.read_in_stream(io.BytesIO(image_data), raw=True)
         read_operation_location = read_response.headers["Operation-Location"]
         operation_id = read_operation_location.split("/")[-1]
 
