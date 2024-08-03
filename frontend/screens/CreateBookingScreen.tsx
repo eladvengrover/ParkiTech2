@@ -86,15 +86,15 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
     console.log('Order End Date and Time:', endDateTime);
     console.log('------------------------------------');
 
-    console.log(startDateTime);
-    console.log(endDateTime);
+    const localizedStartDateTime = new Date(startDateTime.getTime() + 3 * 60 * 60 * 1000);
+    const localizedEndDateTime = new Date(endDateTime.getTime() + 3 * 60 * 60 * 1000);
 
     const bookingData = {
       resident_id: tenantId,
       guest_name: "Shahar",  // TODO - Replace with actual data
       guest_car_number: vehicleNumber,
-      booking_start: startDateTime.toISOString(),
-      booking_end: endDateTime.toISOString(),
+      booking_start: localizedStartDateTime.toISOString(),
+      booking_end: localizedEndDateTime.toISOString(),
       status: "confirmed",
     };
 
