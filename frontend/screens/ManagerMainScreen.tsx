@@ -16,17 +16,19 @@ type Props = {
 const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
   const [isAddUserModalVisible, setAddUserModalVisible] = useState(false);
 
-  const createUser = async (username: string, password: string, isManager: boolean) => {
+  const createUser = async (username: string, password: string, isManager: boolean, buildingId: number) => {
     console.log('------------------------------------');
     console.log('Username:', username);
     console.log('Password:', password);
     console.log('Is Manager:', isManager);
+    console.log('Building Id:', buildingId);
     console.log('------------------------------------');
 
     const userData = {
       username: username,
       password: password,
       is_manager: isManager,
+      building_id: buildingId,
     };
 
     try {
@@ -56,8 +58,8 @@ const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleAddUser = (username: string, password: string, isManager: boolean) => {
-    createUser(username, password, isManager);
+  const handleAddUser = (username: string, password: string, isManager: boolean, buildingId: number) => {
+    createUser(username, password, isManager, buildingId);
     setAddUserModalVisible(false);
   };
 

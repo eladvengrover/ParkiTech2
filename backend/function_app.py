@@ -10,7 +10,7 @@ from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
 from msrest.authentication import CognitiveServicesCredentials
 from db.booking_operations import add_booking
-from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details 
+from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details, get_parkings_statuses
 from db.users_operations import login, is_user_manager, create_new_user, remove_user
 from db.booking_operations import search_booking_by_license_plate  # Import the new function
 from datetime import datetime
@@ -207,6 +207,7 @@ def CreateNewUser(req: func.HttpRequest) -> func.HttpResponse:
     username = req_body.get('username')
     password = req_body.get('password')
     is_manager = req_body.get('is_manager')
+    building_id = req_body.get('building_id')
 
     if not username or not password:
         logging.error("Error in CreateNewUser, username/password required.")
@@ -217,10 +218,10 @@ def CreateNewUser(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     try:
-        new_user_id = create_new_user(username, password, is_manager)
+        new_user_id = create_new_user(username, password, is_manager, building_id)
         if new_user_id != -1:
             return func.HttpResponse(
-                body=json.dumps({"user_id": new_user_id, "password": password, "is_manager": is_manager}),
+                body=json.dumps({"user_id": new_user_id, "password": password, "is_manager": is_manager, "building_id": building_id}),
                 status_code=200,
                 mimetype="application/json"
             )
@@ -368,3 +369,41 @@ def ReadLicensePlate(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(f"Error processing image: {e}", status_code=500)
 
     return func.HttpResponse("No license plate found", status_code=404)
+
+
+@app.route(route="GetParkingsStatuses", auth_level=func.AuthLevel.ANONYMOUS)
+def GetParkingsStatuses(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: GetParkingsStatuses.')
+
+    try:
+        req_body = req.get_json()
+        logging.info(req_body)
+    except ValueError:
+        return func.HttpResponse(
+            json.dumps({"error": "Invalid request"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    try:
+        parkings_statuses = get_parkings_statuses()
+        if parkings_statuses:
+            logging.info(f"parking statuses details fetched successfully")
+            return func.HttpResponse(
+                body=json.dumps(parkings_statuses),
+                status_code=200,
+                mimetype="application/json"
+            )
+        else:
+            return func.HttpResponse(
+                json.dumps({"error": f"Parking statuses not found."}),
+                status_code=404,
+                mimetype="application/json"
+            )
+    except Exception as e:
+        logging.error(f"Error in GetBookingsDetails: {e}")
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}),
+            status_code=500,
+            mimetype="application/json"
+        )

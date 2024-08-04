@@ -94,6 +94,32 @@ const commonStyles = StyleSheet.create({
   free: {
     backgroundColor: '#ccffcc', // Light green for free parking
   },
+
+  
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  label: {
+    fontSize: 16,
+    marginVertical: 5,
+  },
 });
+
+
 
 export default commonStyles;
