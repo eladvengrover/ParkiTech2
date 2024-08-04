@@ -4,27 +4,33 @@ import commonStyles from './commonStyles';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import AddUserModal from './AddUserComponent';
+import { RouteProp, useRoute } from '@react-navigation/native';
 
 type ManagerMainScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ManagerMain'>;
+type ManagerMainScreenRouteProp = RouteProp<RootStackParamList, 'ManagerMain'>;
 
 type Props = {
   navigation: ManagerMainScreenNavigationProp;
 };
 
 const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
+  const route = useRoute<ManagerMainScreenRouteProp>();
+  const { managerId: managerId } = route.params;
   const [isAddUserModalVisible, setAddUserModalVisible] = useState(false);
 
-  const createUser = async (username: string, password: string, isManager: boolean) => {
+  const createUser = async (username: string, password: string, isManager: boolean, buildingId: number) => {
     console.log('------------------------------------');
     console.log('Username:', username);
     console.log('Password:', password);
     console.log('Is Manager:', isManager);
+    console.log('Building Id:', buildingId);
     console.log('------------------------------------');
 
     const userData = {
       username: username,
       password: password,
       is_manager: isManager,
+      building_id: buildingId,
     };
 
     try {
@@ -54,8 +60,8 @@ const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleAddUser = (username: string, password: string, isManager: boolean) => {
-    createUser(username, password, isManager);
+  const handleAddUser = (username: string, password: string, isManager: boolean, buildingId: number) => {
+    createUser(username, password, isManager, buildingId);
     setAddUserModalVisible(false);
   };
 
@@ -99,6 +105,10 @@ const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
+  const handleViewBuilding = () => {
+    navigation.navigate('ViewBuilding', { managerId: managerId });
+  };
+
   return (
     <View style={commonStyles.container}>
       <Text style={commonStyles.title}>Manager Dashboard</Text>
@@ -108,7 +118,11 @@ const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
       <TouchableOpacity style={commonStyles.button} onPress={handleRemoveUser}>
         <Text style={commonStyles.buttonText}>Remove User</Text>
       </TouchableOpacity>
-      {/* Other buttons */}
+      
+      <TouchableOpacity style={commonStyles.button} onPress={handleViewBuilding}>
+        <Text style={commonStyles.buttonText}>View Parking Status</Text>
+      </TouchableOpacity>
+
       <AddUserModal
         visible={isAddUserModalVisible}
         onClose={() => setAddUserModalVisible(false)}

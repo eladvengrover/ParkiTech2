@@ -1,39 +1,44 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, Switch, StyleSheet } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, Switch } from 'react-native';
 import commonStyles from './commonStyles';
 
 type AddUserModalProps = {
   visible: boolean;
   onClose: () => void;
-  onAddUser: (username: string, password: string, isManager: boolean) => void;
+  onAddUser: (username: string, password: string, isManager: boolean, buildingId: number) => void;
 };
 
 const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onClose, onAddUser }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isManager, setIsManager] = useState(false);
+  const [buildingId, setBuildingId] = useState(-1);
 
   const handleAddUser = () => {
-    onAddUser(username, password, isManager);
+    // If the user is a manager, set the building ID to 0
+    const finalBuildingId = isManager ? 0 : buildingId;
+
+    onAddUser(username, password, isManager, finalBuildingId);
     setUsername('');
     setPassword('');
     setIsManager(false);
+    setBuildingId(0);
     onClose();
   };
 
   return (
     <Modal visible={visible} transparent={true} animationType="slide">
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
+      <View style={commonStyles.modalContainer}>
+        <View style={commonStyles.modalContent}>
           <Text style={commonStyles.title}>Add User</Text>
-          <Text style={styles.label}>Username</Text>
+          <Text style={commonStyles.label}>Username</Text>
           <TextInput
             style={commonStyles.input}
             placeholder="Enter username"
             value={username}
             onChangeText={setUsername}
           />
-          <Text style={styles.label}>Password</Text>
+          <Text style={commonStyles.label}>Password</Text>
           <TextInput
             style={commonStyles.input}
             placeholder="Enter password"
@@ -41,10 +46,19 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onClose, onAddUser
             onChangeText={setPassword}
             secureTextEntry
           />
-          <View style={styles.switchContainer}>
-            <Text style={styles.label}>Is Manager?</Text>
+          <View style={commonStyles.switchContainer}>
+            <Text style={commonStyles.label}>Is Manager?</Text>
             <Switch value={isManager} onValueChange={setIsManager} style={{ marginLeft: 'auto' }} />
           </View>
+          <Text style={commonStyles.label}>Building ID:</Text>
+          <TextInput
+            style={commonStyles.input}
+            placeholder="Enter Building ID"
+            value={buildingId.toString()}
+            onChangeText={(text) => setBuildingId(Number(text))}
+            keyboardType="numeric"
+            editable={!isManager}  // Disable input when the user is a manager
+          />
           <TouchableOpacity style={commonStyles.button} onPress={handleAddUser}>
             <Text style={commonStyles.buttonText}>Add</Text>
           </TouchableOpacity>
@@ -56,30 +70,5 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onClose, onAddUser
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  modalContent: {
-    width: 300,
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  label: {
-    fontSize: 16,
-    marginVertical: 5,
-  },
-});
 
 export default AddUserModal;

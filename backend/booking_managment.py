@@ -280,6 +280,7 @@ def get_bookings_details(resident_id):
     except Exception as e:
         return None
     
+    
 
 if __name__ == "__main__":
     allocate_and_book_parking(

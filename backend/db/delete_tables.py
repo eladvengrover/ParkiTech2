@@ -1,13 +1,5 @@
-# to run: python -m db.create_tables
-
-from sqlalchemy import create_engine, Column, Integer, Boolean, String, MetaData, Table
+from sqlalchemy import create_engine, MetaData
 from urllib.parse import quote_plus
-
-#from .db_types.booking_table_types import Base
-from .db_types.building_table_types import Base
-#from .db_types.parking_availability_types import Base
-#from .db_types.parking_table_types import Base
-#from .db_types.users_table_types import Base
 
 # Define connection string and encode it
 connection_string = (
@@ -23,7 +15,9 @@ connection_string = (
 encoded_connection_string = quote_plus(connection_string)
 engine = create_engine(f"mssql+pyodbc:///?odbc_connect={encoded_connection_string}")
 
-Base.metadata.create_all(engine)
+# Drop all tables
+metadata = MetaData()
+metadata.reflect(bind=engine)
+metadata.drop_all(bind=engine)
 
-
-print("Table created successfully!")
+print("All tables dropped successfully!")

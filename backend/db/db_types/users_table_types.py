@@ -10,4 +10,6 @@ class User(Base):
     username = Column(String(50), nullable=False, unique=True)
     password = Column(String(50), nullable=False)
     is_manager = Column(Boolean, nullable=False)
+    building_id = Column(Integer, nullable=False)
+
     
