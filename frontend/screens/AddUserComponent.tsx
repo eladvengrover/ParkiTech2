@@ -15,11 +15,14 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onClose, onAddUser
   const [buildingId, setBuildingId] = useState(-1);
 
   const handleAddUser = () => {
-    onAddUser(username, password, isManager, buildingId);
+    // If the user is a manager, set the building ID to 0
+    const finalBuildingId = isManager ? 0 : buildingId;
+
+    onAddUser(username, password, isManager, finalBuildingId);
     setUsername('');
     setPassword('');
     setIsManager(false);
-    setBuildingId(-1);
+    setBuildingId(0);
     onClose();
   };
 
@@ -54,6 +57,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onClose, onAddUser
             value={buildingId.toString()}
             onChangeText={(text) => setBuildingId(Number(text))}
             keyboardType="numeric"
+            editable={!isManager}  // Disable input when the user is a manager
           />
           <TouchableOpacity style={commonStyles.button} onPress={handleAddUser}>
             <Text style={commonStyles.buttonText}>Add</Text>
