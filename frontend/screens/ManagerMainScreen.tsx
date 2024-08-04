@@ -4,16 +4,18 @@ import commonStyles from './commonStyles';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import AddUserModal from './AddUserComponent';
-import { RouteProp } from '@react-navigation/native';
+import { RouteProp, useRoute } from '@react-navigation/native';
 
 type ManagerMainScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ManagerMain'>;
-type ManagerMainScreenRouteProp = RouteProp<RootStackParamList, 'TenantMain'>;
+type ManagerMainScreenRouteProp = RouteProp<RootStackParamList, 'ManagerMain'>;
 
 type Props = {
   navigation: ManagerMainScreenNavigationProp;
 };
 
 const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
+  const route = useRoute<ManagerMainScreenRouteProp>();
+  const { managerId: managerId } = route.params;
   const [isAddUserModalVisible, setAddUserModalVisible] = useState(false);
 
   const createUser = async (username: string, password: string, isManager: boolean, buildingId: number) => {
@@ -103,6 +105,10 @@ const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
+  const handleViewBuilding = () => {
+    navigation.navigate('ViewBuilding', { managerId: managerId });
+  };
+
   return (
     <View style={commonStyles.container}>
       <Text style={commonStyles.title}>Manager Dashboard</Text>
@@ -113,7 +119,7 @@ const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={commonStyles.buttonText}>Remove User</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity style={commonStyles.button} onPress={() => navigation.navigate('ParkingStatus')}>
+      <TouchableOpacity style={commonStyles.button} onPress={handleViewBuilding}>
         <Text style={commonStyles.buttonText}>View Parking Status</Text>
       </TouchableOpacity>
 

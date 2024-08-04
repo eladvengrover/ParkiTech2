@@ -12,7 +12,7 @@ import ViewBookingScreen from './screens/ViewBookingScreen';
 import GuestDirectionScreen from './screens/GuestDirectionScreen';
 import EditBookingScreen from './screens/EditBookingScreen';
 import ParkingStatusScreen from './screens/ParkingStatusScreen';
-
+import ViewBuildingScreen from './screens/ViewBuildingScreen';
 
 const Stack = createStackNavigator();
 
@@ -30,6 +30,7 @@ function App() {
         <Stack.Screen name="GuestDirection" component={GuestDirectionScreen} />
         <Stack.Screen name="EditBooking" component={EditBookingScreen} />
         <Stack.Screen name="ParkingStatus" component={ParkingStatusScreen} />
+        <Stack.Screen name="ViewBuilding" component={ViewBuildingScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

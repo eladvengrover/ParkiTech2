@@ -280,26 +280,6 @@ def get_bookings_details(resident_id):
     except Exception as e:
         return None
     
-def get_parkings_statuses():
-    try:
-        now = datetime.datetime.now()
-        parking_status = session.query(ParkingAvailability).filter(
-            and_(
-                ParkingAvailability.start_time <= now,
-                ParkingAvailability.end_time >= now
-            )
-        ).all()
-        parking_status_list = [
-            {
-                "parking_id": parking.parking_id,
-                "status": parking.status,
-                "booking_id": parking.booking_id
-            }
-            for parking in parking_status
-        ]        
-        return parking_status_list
-    except Exception as e:
-        return None
     
 
 if __name__ == "__main__":

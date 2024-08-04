@@ -19,7 +19,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     const isManager = responseBody.is_manager;
 
     if (isManager) {
-      navigation.navigate('ManagerMain');
+      navigation.navigate('ManagerMain', { managerId: tenantId });
     } else {
       navigation.navigate('TenantMain', { tenantId: tenantId });
     }

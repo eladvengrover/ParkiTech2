@@ -14,6 +14,7 @@ type Props = {
 
 const ParkingStatusScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<ParkingStatusScreenRouteProp>();
+  const { buildingId: buildingId } = route.params;
 
   const [parkingStatus, setParkingStatus] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +27,7 @@ const ParkingStatusScreen: React.FC<Props> = ({ navigation }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ }),
+        body: JSON.stringify({ building_id: buildingId }),
       });
 
       const responseBody = await response.json();
