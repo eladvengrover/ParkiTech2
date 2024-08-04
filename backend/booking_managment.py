@@ -172,6 +172,9 @@ def allocate_and_book_parking(resident_id, guest_name, guest_car_number, start_t
             ParkingAvailability.end_time >= end_time
         )).all()
 
+    if not available_parkings:
+        return (-5, -1)  # Return -5 if no available parkings found
+
     best_parking = find_best_parking(available_parkings, start_time, end_time)
 
     if best_parking != -1:
@@ -308,3 +311,15 @@ if __name__ == "__main__":
         end_time=datetime.datetime.now() + datetime.timedelta(days=1) + datetime.timedelta(hours=2),
         status="confirmed"
     )
+
+def search_booking_by_license_plate(license_plate):
+    current_time = datetime.now()
+    booking = session.query(Booking).filter(
+        and_(
+            Booking.guest_car_number == license_plate,
+            Booking.booking_start <= current_time,
+            Booking.booking_end >= current_time,
+            Booking.status == 'confirmed'
+        )
+    ).first()
+    return booking

@@ -46,7 +46,12 @@ const ViewBookingScreen: React.FC<Props> = ({ navigation }) => {
       if (response.status === 200) {
         setBookings(responseBody);
       } else {
-        Alert.alert('Error', responseBody.error || 'Failed to fetch bookings');
+        const regex = /Bookings of resident ID \d{1,3} not found/;
+        if (regex.test(responseBody.error)) {
+          Alert.alert('No bookings yet');  
+        } else {
+          Alert.alert('Error', responseBody.error || 'Failed to fetch bookings');
+        }
       }
     } catch (error) {
       console.error('Error fetching bookings:', error);

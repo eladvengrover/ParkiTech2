@@ -114,8 +114,8 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
     try {
       const success = await deleteBooking();
       if (success) {
+        navigation.navigate('TenantMain', { tenantId });
         Alert.alert('Success', 'Booking deleted successfully');
-        navigation.navigate('ViewBooking', { tenantId });
       } else {
         Alert.alert('Failure', 'Failed to delete booking. Please try again.');
       }

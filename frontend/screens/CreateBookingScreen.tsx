@@ -28,12 +28,12 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
     const validationRes = validateBooking();
     if (validationRes) {
       try {
-        const success = await submitBooking();
-        if (success) {
+        const response = await submitBooking();
+        if (response.success) {
           Alert.alert('Success', 'Booking created successfully');
           navigation.goBack();
         } else {
-          Alert.alert('Failure', 'Failed to create booking. Please try again.');
+          Alert.alert('Failure', response.data);
         }
       } catch (error) {
         console.error('Error creating booking:', error);
@@ -86,15 +86,15 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
     console.log('Order End Date and Time:', endDateTime);
     console.log('------------------------------------');
 
-    console.log(startDateTime);
-    console.log(endDateTime);
+    const localizedStartDateTime = new Date(startDateTime.getTime() + 3 * 60 * 60 * 1000);
+    const localizedEndDateTime = new Date(endDateTime.getTime() + 3 * 60 * 60 * 1000);
 
     const bookingData = {
       resident_id: tenantId,
       guest_name: "Shahar",  // TODO - Replace with actual data
       guest_car_number: vehicleNumber,
-      booking_start: startDateTime.toISOString(),
-      booking_end: endDateTime.toISOString(),
+      booking_start: localizedStartDateTime.toISOString(),
+      booking_end: localizedEndDateTime.toISOString(),
       status: "confirmed",
     };
 
@@ -112,15 +112,14 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
       const parking_id = responseBody.parking_id;
 
       if (response.ok) {
-        return true;
+        return { success: true, data: "Success" };
       } else {
-        const errorText = await response.text();
-        console.error('Error creating booking:', errorText);
-        return false;
+        console.error('Error creating booking:', responseBody.error);
+        return { success: false, data: responseBody.error };
       }
     } catch (error) {
       console.error('Error creating booking:', error);
-      return false;
+      return { success: false, data: error };
     }
   };
 
