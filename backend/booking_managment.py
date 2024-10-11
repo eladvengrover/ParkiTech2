@@ -1,8 +1,8 @@
 from db.connection import session
 from db.db_types.booking_table_types import Booking
 from db.db_types.parking_availability_types import ParkingAvailability
-from sqlalchemy import and_
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import and_ # type: ignore
+from sqlalchemy.orm.exc import NoResultFound # type: ignore
 import datetime
 
 NUM_PARKING_SPACES = 100

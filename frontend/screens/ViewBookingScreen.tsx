@@ -80,7 +80,7 @@ const ViewBookingScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleDirectionsPress = (parkingId: number) => {
-    navigation.navigate('GuestDirectionScreen', { parkingId });
+    navigation.navigate('GuestDirection', { parkingId });
   };
 
   return (
@@ -98,7 +98,6 @@ const ViewBookingScreen: React.FC<Props> = ({ navigation }) => {
               <Text>Vehicle Number: {item.vehicle_number}</Text>
               <Text>Start Date: {formatDateTime(item.start_date_time)}</Text>
               <Text>End Date: {formatDateTime(item.end_date_time)}</Text>
-              <Text>Parking Number: {item.parking_id}</Text>
 
               {/* Directions to Parking Button */}
               <TouchableOpacity

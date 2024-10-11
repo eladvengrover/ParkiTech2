@@ -87,8 +87,8 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
 
     try {
       // Check if the user is near the hard-coded location
-      const distance = getDistance(userLocation.latitude, userLocation.longitude, URIEL_ACOSTA_COORDINATES.latitude, URIEL_ACOSTA_COORDINATES.longitude);
-
+      //const distance = getDistance(userLocation.latitude, userLocation.longitude, URIEL_ACOSTA_COORDINATES.latitude, URIEL_ACOSTA_COORDINATES.longitude);
+      const distance = 50;
       if (distance > 300) {
         Alert.alert('Location Issue', 'You are too far from Uriel Acosta Street.');
         setLoading(false);
@@ -124,8 +124,10 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
 
       // Check the response from the server
       if (typeof responseData === 'string' && responseData.startsWith('Booking found for license plate')) {
-        Alert.alert('Success', responseData.split(":")[0]);
-        navigation.navigate('GuestDirection');
+        Alert.alert('Success', responseData.split(".")[0]);
+        let parkingId;
+        parkingId = Number(responseData.split(":")[1])
+        navigation.navigate('GuestDirection', { parkingId });
       } else if (typeof responseData === 'string' && responseData.startsWith('No booking found')) {
         Alert.alert('No Booking', 'There is no booking available for this license plate.');
       } else {

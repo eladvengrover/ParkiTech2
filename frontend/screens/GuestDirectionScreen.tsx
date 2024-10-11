@@ -10,6 +10,7 @@ const GuestDirectionScreen: React.FC = () => {
   const { parkingId } = route.params;
 
   const [parkingLocation, setParkingLocation] = useState<string | null>(null); // State to hold parking location
+  const [parkingNumber, setParkingNumber] = useState<number | null>(null); // State to hold parking number
   const [loading, setLoading] = useState<boolean>(true); // State to manage loading
 
   // Fetch parking location using the parking ID
@@ -25,11 +26,12 @@ const GuestDirectionScreen: React.FC = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.location && data.number !== undefined) {
         console.log(response);
         setParkingLocation(data.location); // Assuming data contains the 'location' field
+        setParkingNumber(data.number);     // Assuming data contains the 'number' field
       } else {
-        throw new Error(data.error || 'Failed to fetch parking location');
+        throw new Error(data.error || 'Failed to fetch parking location or parking number');
       }
     } catch (error) {
       // Type-safe handling of unknown error type
@@ -51,7 +53,9 @@ const GuestDirectionScreen: React.FC = () => {
   return (
     <View style={commonStyles.container}>
       <Text style={commonStyles.title}>Directions to Parking</Text>
-      <Text style={commonStyles.dateText}>Parking ID: {parkingId}</Text>
+      <Text style={commonStyles.dateText}>
+        Parking Number: {parkingNumber !== null ? parkingNumber : 'Not available'}
+      </Text>
 
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" /> // Show loading spinner while fetching

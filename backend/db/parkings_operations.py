@@ -2,7 +2,8 @@ from .connection import session
 from db.db_types.parking_availability_types import ParkingAvailability
 from db.db_types.parking_table_types import Parking
 import datetime
-from sqlalchemy import and_
+from sqlalchemy import and_ # type: ignore
+
 
 
 def get_parkings_statuses(building_id):
@@ -24,7 +25,7 @@ def get_parkings_statuses(building_id):
         parking_status_list = [
             {
                 "parking_id": parking.parking_id,
-                "status": parking.status,
+                "status": ParkingAvailability.status,
                 "booking_id": parking.booking_id
             }
             for parking in parking_status
@@ -36,17 +37,17 @@ def get_parkings_statuses(building_id):
         return None
 
 
-def get_parking_location(parking_id):
+def get_parking_location_and_number(parking_id):
     try:
         # Querying Parking and filtering by parking_id
         parking_record = session.query(Parking).filter(Parking.parking_id == parking_id).one_or_none()
 
         if parking_record:
-            # Assuming 'location' is a field in the Parking table
-            return parking_record.location
+            # Return a dictionary with location and parking_number
+            return {"location": parking_record.location, "parking_number": parking_record.parking_number}
         else:
             print(f"No parking found for parking ID: {parking_id}")
             return None
     except Exception as e:
-        print(f"Error retrieving parking location: {e}")
+        print(f"Error retrieving parking location and number: {e}")
         return None

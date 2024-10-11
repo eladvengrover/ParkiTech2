@@ -27,7 +27,7 @@ function App() {
         <Stack.Screen name="ManagerMain" component={ManagerMainScreen} />
         <Stack.Screen name="CreateBooking" component={CreateBookingScreen} />
         <Stack.Screen name="ViewBooking" component={ViewBookingScreen} />
-        <Stack.Screen name="GuestDirectionScreen" component={GuestDirectionScreen} />
+        <Stack.Screen name="GuestDirection" component={GuestDirectionScreen} />
         <Stack.Screen name="EditBooking" component={EditBookingScreen} />
         <Stack.Screen name="ParkingStatus" component={ParkingStatusScreen} />
         <Stack.Screen name="ViewBuilding" component={ViewBuildingScreen} />

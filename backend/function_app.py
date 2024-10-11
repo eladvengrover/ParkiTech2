@@ -1,21 +1,20 @@
 import json
-import azure.functions as func
+import azure.functions as func # type: ignore
 import os
-import requests
 import logging
 import time
 import io
 import re  # Import the regular expressions module
-from azure.cognitiveservices.vision.computervision import ComputerVisionClient
-from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
-from msrest.authentication import CognitiveServicesCredentials
+from azure.cognitiveservices.vision.computervision import ComputerVisionClient # type: ignore
+from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes # type: ignore
+from msrest.authentication import CognitiveServicesCredentials # type: ignore
 from db.booking_operations import add_booking
 from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details
 from db.users_operations import login, is_user_manager, create_new_user, remove_user
 from db.booking_operations import search_booking_by_license_plate  # Import the new function
 from db.buildings_operations import get_buildings_list
 from db.parkings_operations import get_parkings_statuses
-from db.parkings_operations import get_parking_location
+from db.parkings_operations import get_parking_location_and_number
 from datetime import datetime
 from helpers import adjust_timezone_formatting
 
@@ -341,11 +340,14 @@ def GetParkingDirections(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     try:
-        parking_location = get_parking_location(parking_id)
-        if parking_location:
+        parking_location_and_number = get_parking_location_and_number(parking_id)
+        if parking_location_and_number:
             logging.info(f"Parking location fetched successfully for parking ID: {parking_id}")
             return func.HttpResponse(
-                body=json.dumps({"location": parking_location}),
+                body=json.dumps({
+                    "location": parking_location_and_number["location"],  # Access by key
+                    "number": parking_location_and_number["parking_number"]  # Access by key
+                }),
                 status_code=200,
                 mimetype="application/json"
             )
@@ -362,6 +364,8 @@ def GetParkingDirections(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
             mimetype="application/json"
         )
+
+
 
 @app.route(route="ReadLicensePlate", methods=['POST'], auth_level=func.AuthLevel.ANONYMOUS)
 def ReadLicensePlate(req: func.HttpRequest) -> func.HttpResponse:
@@ -407,7 +411,7 @@ def ReadLicensePlate(req: func.HttpRequest) -> func.HttpResponse:
                     if numeric_text:
                         booking = search_booking_by_license_plate(numeric_text)
                         if booking:
-                            return func.HttpResponse(f"Booking found for license plate {numeric_text}: {booking}", status_code=200)
+                            return func.HttpResponse(f"Booking found for license plate {numeric_text}. Parking ID is: {booking.parking_id}", status_code=200)
                         else:
                             return func.HttpResponse(f"No booking found for license plate {numeric_text}", status_code=404)
 
