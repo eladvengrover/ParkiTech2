@@ -19,6 +19,7 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
   const { tenantId: tenantId } = route.params;  
   
   const [vehicleNumber, setVehicleNumber] = useState('');
+  const [guestName, setGuestName] = useState('');
   const [startDateTime, setStartDateTime] = useState(new Date());
   const [endDateTime, setEndDateTime] = useState(new Date());
   const [showStartPicker, setShowStartPicker] = useState(false);
@@ -60,7 +61,7 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
     const now = new Date();
 
     // Validation checks
-    if (!vehicleNumber || !startDateTime || !endDateTime) {
+    if (!vehicleNumber || !guestName || !startDateTime || !endDateTime) {
       Alert.alert('Error', 'All fields must be filled.');
       return false;
     }
@@ -82,6 +83,7 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
   const submitBooking = async () => {
     console.log('------------------------------------');
     console.log('Vehicle Number:', vehicleNumber);
+    console.log('Guest Name:', guestName);
     console.log('Order Start Date and Time:', startDateTime);
     console.log('Order End Date and Time:', endDateTime);
     console.log('------------------------------------');
@@ -91,7 +93,7 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
 
     const bookingData = {
       resident_id: tenantId,
-      guest_name: "Shahar",  // TODO - Replace with actual data
+      guest_name: guestName,
       guest_car_number: vehicleNumber,
       booking_start: localizedStartDateTime.toISOString(),
       booking_end: localizedEndDateTime.toISOString(),
@@ -127,6 +129,12 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={commonStyles.container}>
         <Text style={commonStyles.title}>Create a new booking</Text>
+        <TextInput
+          style={commonStyles.input}
+          placeholder="Guest Name"  // New input for guest name
+          value={guestName}
+          onChangeText={setGuestName}
+        />
         <TextInput
           style={commonStyles.input}
           placeholder="Vehicle Number"

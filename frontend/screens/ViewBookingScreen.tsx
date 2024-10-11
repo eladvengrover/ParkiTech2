@@ -44,6 +44,7 @@ const ViewBookingScreen: React.FC<Props> = ({ navigation }) => {
       const responseBody = await response.json();
 
       if (response.status === 200) {
+        console.log(responseBody);
         setBookings(responseBody);
       } else {
         const regex = /Bookings of resident ID \d{1,3} not found/;
@@ -89,6 +90,7 @@ const ViewBookingScreen: React.FC<Props> = ({ navigation }) => {
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => handlePress(item)} style={commonStyles.bookingItem}>
+              <Text>Guest: {item.guest_name}</Text>
               <Text>Vehicle Number: {item.vehicle_number}</Text>
               <Text>Start Date: {formatDateTime(item.start_date_time)}</Text>
               <Text>End Date: {formatDateTime(item.end_date_time)}</Text>

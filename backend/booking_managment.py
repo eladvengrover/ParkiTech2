@@ -268,6 +268,7 @@ def get_bookings_details(resident_id):
         existing_bookings = session.query(Booking).filter_by(resident_id=resident_id).all()
         bookings_list = [
             {
+                "guest_name": booking.guest_name,
                 "id": booking.id,
                 "vehicle_number": booking.guest_car_number,
                 "start_date_time": booking.booking_start.isoformat(),
