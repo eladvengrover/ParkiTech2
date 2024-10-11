@@ -41,6 +41,9 @@ const commonStyles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 10,
   },
+  section: {
+    marginBottom: 30,  // Adds space between sections
+  },
   dateText: {
     textAlign: 'center',
     marginVertical: 10,

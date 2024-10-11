@@ -71,7 +71,8 @@ const ViewBookingScreen: React.FC<Props> = ({ navigation }) => {
   const handlePress = (item: any) => {
     navigation.navigate('EditBooking', { 
       tenantId, 
-      bookingId: item.id, 
+      bookingId: item.id,
+      guestName: item.guest_name, 
       vehicleNumber: item.vehicle_number, 
       startDateTime: item.start_date_time, 
       endDateTime: item.end_date_time,
