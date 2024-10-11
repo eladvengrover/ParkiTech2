@@ -61,6 +61,7 @@ const ViewBuildingScreen: React.FC<Props> = ({ navigation }) => {
     navigation.navigate('ParkingStatus', { 
       managerId, 
       buildingId: item.building_id, 
+      buildingName: item.building_name
     });
   };
 

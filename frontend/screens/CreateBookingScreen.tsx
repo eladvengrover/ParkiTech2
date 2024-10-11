@@ -94,8 +94,7 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
       guest_name: "Shahar",  // TODO - Replace with actual data
       guest_car_number: vehicleNumber,
       booking_start: localizedStartDateTime.toISOString(),
-      booking_end: localizedEndDateTime.toISOString(),
-      status: "confirmed",
+      booking_end: localizedEndDateTime.toISOString()
     };
 
     try {
@@ -106,7 +105,6 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
         },
         body: JSON.stringify(bookingData)
       });
-      const responseStatus = response.status;
       const responseBody = await response.json();
       const booking_id = responseBody.booking_id;
       const parking_id = responseBody.parking_id;

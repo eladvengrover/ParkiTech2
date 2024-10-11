@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import commonStyles from './commonStyles';
@@ -14,7 +14,7 @@ type Props = {
 
 const ParkingStatusScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<ParkingStatusScreenRouteProp>();
-  const { buildingId: buildingId } = route.params;
+  const { managerId, buildingId, buildingName } = route.params;
 
   const [parkingStatus, setParkingStatus] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,8 +33,7 @@ const ParkingStatusScreen: React.FC<Props> = ({ navigation }) => {
       const responseBody = await response.json();
 
       if (response.status === 200) {
-        // Sort the parking statuses by parking_id
-        const sortedStatus = responseBody.sort((a: any, b: any) => a.parking_id - b.parking_id);
+        const sortedStatus = responseBody.sort((a: any, b: any) => a.parking_number - b.parking_number);
         setParkingStatus(sortedStatus);
       } else {
         Alert.alert('Error', responseBody.error || 'Failed to fetch parking status');
@@ -47,31 +46,61 @@ const ParkingStatusScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    fetchParkingStatus();
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchParkingStatus();
+    }, [])
+  );
 
-    const intervalId = setInterval(fetchParkingStatus, 60000); // Update every 1 minute
-
-    return () => clearInterval(intervalId); // Clean up on unmount
-  }, []);
+  const handlePress = (parkingId: number, parkingNumber: number, location: string, isPermanentlyBlocked: boolean) => {
+    navigation.navigate('EditParking', {
+      parkingId,
+      parkingNumber,
+      location,
+      isPermanentlyBlocked,
+      buildingName,
+      managerId,
+      buildingId
+    });
+  };
+  
 
   const renderRow = ({ item }: { item: any }) => {
     const isOccupied = item.status === 'Occupied';
+    const isBlocked = item.is_permanently_blocked === true;
+  
+    let rowStyle = commonStyles.free;
+    if (isBlocked) {
+      rowStyle = commonStyles.blocked;
+    } else if (isOccupied) {
+      rowStyle = commonStyles.occupied;
+    }
+  
     return (
-      <View style={[commonStyles.row, isOccupied ? commonStyles.occupied : commonStyles.free]}>
-        <Text style={commonStyles.cell}>{item.parking_id}</Text>
-        <Text style={commonStyles.cell}>{item.status}</Text>
-        <Text style={commonStyles.cell}>{isOccupied ? item.booking_id || '-' : '-'}</Text>
-      </View>
+      <TouchableOpacity
+        onPress={() => handlePress(
+          item.parking_id,
+          item.parking_number,
+          item.location,
+          item.is_permanently_blocked
+        )}
+      >
+        <View style={[commonStyles.row, rowStyle]}>
+          <Text style={commonStyles.cell}>{item.parking_number}</Text>
+          <Text style={commonStyles.cell}>{item.status}</Text>
+          <Text style={commonStyles.cell}>{isOccupied ? item.booking_id || '-' : '-'}</Text>
+        </View>
+      </TouchableOpacity>
     );
   };
+  
 
   return (
     <View style={commonStyles.container}>
       <Text style={commonStyles.title}>Parking Statuses</Text>
       <View style={commonStyles.table}>
         <View style={commonStyles.headerRow}>
-          <Text style={commonStyles.headerCell}>Parking ID</Text>
+          <Text style={commonStyles.headerCell}>Parking Number</Text>
           <Text style={commonStyles.headerCell}>Status</Text>
           <Text style={commonStyles.headerCell}>Booking ID</Text>
         </View>

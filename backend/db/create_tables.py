@@ -4,10 +4,10 @@ from sqlalchemy import create_engine, Column, Integer, Boolean, String, MetaData
 from urllib.parse import quote_plus
 
 #from .db_types.booking_table_types import Base
-from .db_types.building_table_types import Base
+#from .db_types.building_table_types import Base
 #from .db_types.parking_availability_types import Base
 #from .db_types.parking_table_types import Base
-#from .db_types.users_table_types import Base
+from .db_types.users_table_types import Base
 
 # Define connection string and encode it
 connection_string = (

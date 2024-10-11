@@ -94,6 +94,9 @@ const commonStyles = StyleSheet.create({
   free: {
     backgroundColor: '#ccffcc', // Light green for free parking
   },
+  blocked: {
+    backgroundColor: '#d3d3d3', // Grey for blocked parking
+  },
 
   
   modalContainer: {

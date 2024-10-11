@@ -6,6 +6,8 @@ Base = declarative_base()
 class Parking(Base):
     __tablename__ = 'parkings'
     parking_id = Column(Integer, primary_key=True)
+    parking_number = Column(Integer, nullable=False)
     location = Column(String)
     building_id = Column(Integer, nullable=False)
-    # TODO - maybe add direction?
+    is_permanently_blocked = Column(Boolean, default=False)
+

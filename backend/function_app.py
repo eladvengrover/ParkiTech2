@@ -14,7 +14,7 @@ from booking_managment import allocate_and_book_parking, update_booking, remove_
 from db.users_operations import login, is_user_manager, create_new_user, remove_user
 from db.booking_operations import search_booking_by_license_plate  # Import the new function
 from db.buildings_operations import get_buildings_list
-from db.parkings_operations import get_parkings_statuses
+from db.parkings_operations import get_parkings_statuses, update_parking_details, remove_parking
 from datetime import datetime
 from helpers import adjust_timezone_formatting
 
@@ -44,8 +44,7 @@ def CreateNewBooking(req: func.HttpRequest) -> func.HttpResponse:
             guest_name=req_body['guest_name'],
             guest_car_number=req_body['guest_car_number'],
             start_time=start_time,
-            end_time=end_time,
-            status=req_body['status']
+            end_time=end_time
         )
 
         if new_booking_id > 0:
@@ -129,8 +128,7 @@ def UpdateBooking(req: func.HttpRequest) -> func.HttpResponse:
             guest_name=req_body['guest_name'],
             guest_car_number=req_body['guest_car_number'],
             start_time=start_time,
-            end_time=end_time,
-            status=req_body['status']
+            end_time=end_time
         )
 
         if updated_booking_id:
@@ -381,6 +379,7 @@ def GetParkingsStatuses(req: func.HttpRequest) -> func.HttpResponse:
         req_body = req.get_json()
         logging.info(req_body)
     except ValueError:
+        logging.info('############ 1')
         return func.HttpResponse(
             json.dumps({"error": "Invalid request"}),
             status_code=400,
@@ -388,7 +387,9 @@ def GetParkingsStatuses(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     building_id = req_body.get('building_id')
+    logging.info('############ 2')
     if not building_id:
+        logging.info('############ 3')
         return func.HttpResponse(
             json.dumps({"error": "building_id required"}),
             status_code=400,
@@ -396,22 +397,25 @@ def GetParkingsStatuses(req: func.HttpRequest) -> func.HttpResponse:
         )
     
     try:
+        logging.info('############ 4')
         parkings_statuses = get_parkings_statuses(building_id)
+        logging.info(parkings_statuses)
         if parkings_statuses:
-            logging.info(f"parking statuses details fetched successfully")
+            logging.info('parking statuses details fetched successfully')
             return func.HttpResponse(
                 body=json.dumps(parkings_statuses),
                 status_code=200,
                 mimetype="application/json"
             )
         else:
+            logging.info('############ 5')
             return func.HttpResponse(
                 json.dumps({"error": f"Parking statuses not found."}),
                 status_code=404,
                 mimetype="application/json"
             )
     except Exception as e:
-        logging.error(f"Error in GetParkingsStatuses: {e}")
+        logging.error(f'Error in GetParkingsStatuses: {e}')
         return func.HttpResponse(
             json.dumps({"error": str(e)}),
             status_code=500,
@@ -463,3 +467,64 @@ def GetBuildingList(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
             mimetype="application/json"
         )
+
+@app.route(route="UpdateParkingDetails", auth_level=func.AuthLevel.ANONYMOUS)
+def UpdateParkingDetails(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: UpdateParkingDetails.')
+
+    name = req.params.get('name')
+    if not name:
+        try:
+            req_body = req.get_json()
+            logging.info(req_body)
+        except ValueError:
+            pass
+    else:
+        name = req_body.get('name')
+
+    try:
+        parking_id = req_body['parking_id']
+
+        updated_parking_id = update_parking_details(
+            parking_id=parking_id,
+            parking_number=req_body['parking_number'],
+            location=req_body['location'],
+            building_id=req_body['building_id'],
+            is_permanently_blocked=req_body['is_permanently_blocked']
+        )
+
+        if updated_parking_id:
+            logging.info(f"Parking updated successfully: {req_body}")
+            return func.HttpResponse("Parking updated successfully.", status_code=200)
+        else:
+            return func.HttpResponse(f"Parking with ID {parking_id} not found.", status_code=404)
+    except Exception as e:
+        logging.error(f"Error in UpdateParkingDetails: {e}")
+        return func.HttpResponse(f"Error: {str(e)}", status_code=500)
+    
+
+@app.route(route="RemoveParking", auth_level=func.AuthLevel.ANONYMOUS)
+def RemoveParking(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: RemoveParking.')
+
+    name = req.params.get('name')
+    if not name:
+        try:
+            req_body = req.get_json()
+            logging.info(req_body)
+        except ValueError:
+            pass
+    else:
+        name = req_body.get('name')
+
+    try:
+        parking_id = req_body['parking_id']
+        
+        if remove_parking(parking_id):
+            logging.info(f"Parking removed successfully: {req_body}")
+            return func.HttpResponse("Parking removed successfully.", status_code=200)
+        else:
+            return func.HttpResponse(f"Parking with ID {parking_id} not found.", status_code=404)
+    except Exception as e:
+        logging.error(f"Error in RemoveParking: {e}")
+        return func.HttpResponse(f"Error: {str(e)}", status_code=500)
