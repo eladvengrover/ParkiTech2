@@ -11,5 +11,7 @@ export type RootStackParamList = {
     ManagerMain: {managerId: number};
     ParkingStatus: { managerId: number, buildingId: number };
     ViewBuilding: { managerId: number };
+    GuestDirectionScreen: { parkingId: number }; 
+
   };
   

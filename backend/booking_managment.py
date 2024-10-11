@@ -130,14 +130,13 @@ def update_parking_availability_after_delete(parking_id, start_time, end_time, b
     session.commit()
 
 
-def create_booking(resident_id, guest_name, guest_car_number, start_time, end_time, status, parking_id):
+def create_booking(resident_id, guest_name, guest_car_number, start_time, end_time, parking_id):
     new_booking = Booking(
         resident_id=resident_id,
         guest_name=guest_name,
         guest_car_number=guest_car_number,
         booking_start=start_time,
         booking_end=end_time,
-        status=status,
         parking_id=parking_id,
     )
     session.add(new_booking)
@@ -164,7 +163,7 @@ def find_best_parking(available_parkings, start_time, end_time):
     return best_parking_id
 
 
-def allocate_and_book_parking(resident_id, guest_name, guest_car_number, start_time, end_time, status):
+def allocate_and_book_parking(resident_id, guest_name, guest_car_number, start_time, end_time):
     available_parkings = session.query(ParkingAvailability).filter(
         and_(
             ParkingAvailability.status == 'Available',
@@ -178,7 +177,7 @@ def allocate_and_book_parking(resident_id, guest_name, guest_car_number, start_t
     best_parking = find_best_parking(available_parkings, start_time, end_time)
 
     if best_parking != -1:
-        new_booking_id = create_booking(resident_id, guest_name, guest_car_number, start_time, end_time, status, best_parking)
+        new_booking_id = create_booking(resident_id, guest_name, guest_car_number, start_time, end_time, best_parking)
         return (new_booking_id, best_parking) 
     else:
         # TODO enable rearranged feature in the future
@@ -188,7 +187,7 @@ def allocate_and_book_parking(resident_id, guest_name, guest_car_number, start_t
         # else:
         return (-1, -1)
 
-def update_booking(booking_id, resident_id, guest_name, guest_car_number, start_time, end_time, status):
+def update_booking(booking_id, resident_id, guest_name, guest_car_number, start_time, end_time):
     try:
         # Fetch the existing booking
         existing_booking = session.query(Booking).filter_by(id=booking_id).one()
@@ -204,8 +203,7 @@ def update_booking(booking_id, resident_id, guest_name, guest_car_number, start_
                 guest_name=guest_name,
                 guest_car_number=guest_car_number,
                 start_time=start_time,
-                end_time=end_time,
-                status=status
+                end_time=end_time
             )
             return new_booking_id #TODO - what happens if updating doesnt success?
         else:
@@ -213,7 +211,6 @@ def update_booking(booking_id, resident_id, guest_name, guest_car_number, start_
             existing_booking.resident_id = resident_id
             existing_booking.guest_name = guest_name
             existing_booking.guest_car_number = guest_car_number
-            existing_booking.status = status
             session.commit()
             return existing_booking.id
     except NoResultFound:
@@ -290,7 +287,7 @@ if __name__ == "__main__":
         guest_car_number="1234XYZ",
         start_time=datetime.datetime.now() + datetime.timedelta(days=1),
         end_time=datetime.datetime.now() + datetime.timedelta(days=1) + datetime.timedelta(hours=2),
-        status="confirmed"
+        
     )
 
 def search_booking_by_license_plate(license_plate):
@@ -300,7 +297,7 @@ def search_booking_by_license_plate(license_plate):
             Booking.guest_car_number == license_plate,
             Booking.booking_start <= current_time,
             Booking.booking_end >= current_time,
-            Booking.status == 'confirmed'
+            
         )
     ).first()
     return booking

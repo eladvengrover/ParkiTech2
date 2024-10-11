@@ -38,9 +38,7 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
         }
 
         const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Highest,
-          maximumAge: 10000,
-          timeout: 5000,
+          accuracy: Location.Accuracy.Highest
         });
 
         console.log("Location received:", location.coords);

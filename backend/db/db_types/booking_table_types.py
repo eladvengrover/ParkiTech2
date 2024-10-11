@@ -12,7 +12,6 @@ class Booking(Base):
     guest_car_number = Column(String, nullable=False)
     booking_start = Column(DateTime, nullable=False)
     booking_end = Column(DateTime, nullable=False)
-    status = Column(String, nullable=False) #TODO - check if we need this field? consider removing it
     parking_id = Column(Integer, nullable=False)
     # parking_id = Column(Integer, ForeignKey('parkings.parking_id')) 
     # TODO - check the issue with foreign key and enable it!

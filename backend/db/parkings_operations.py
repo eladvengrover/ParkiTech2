@@ -34,3 +34,19 @@ def get_parkings_statuses(building_id):
     except Exception as e:
         print(f"Error: {e}")
         return None
+
+
+def get_parking_location(parking_id):
+    try:
+        # Querying Parking and filtering by parking_id
+        parking_record = session.query(Parking).filter(Parking.parking_id == parking_id).one_or_none()
+
+        if parking_record:
+            # Assuming 'location' is a field in the Parking table
+            return parking_record.location
+        else:
+            print(f"No parking found for parking ID: {parking_id}")
+            return None
+    except Exception as e:
+        print(f"Error retrieving parking location: {e}")
+        return None

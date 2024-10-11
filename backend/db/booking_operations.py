@@ -2,14 +2,13 @@ from datetime import datetime, timedelta
 from .connection import session
 from .db_types.booking_table_types import Booking
 
-def add_booking(resident_id, guest_name, guest_car_number, booking_start, booking_end, status):
+def add_booking(resident_id, guest_name, guest_car_number, booking_start, booking_end):
     new_booking = Booking(
         resident_id=resident_id,
         guest_name=guest_name,
         guest_car_number=guest_car_number,
         booking_start=booking_start,
-        booking_end=booking_end,
-        status=status
+        booking_end=booking_end
     )
     session.add(new_booking)
     session.commit()
@@ -29,8 +28,7 @@ def search_booking_by_license_plate(license_plate):
     current_time = datetime.now() + timedelta(hours=3)
     booking = session.query(Booking).filter_by(guest_car_number=license_plate).filter(
         Booking.booking_start <= current_time,
-        Booking.booking_end >= current_time,
-        Booking.status == 'confirmed'
+        Booking.booking_end >= current_time
     ).first()
     return booking
 
@@ -52,8 +50,7 @@ if __name__ == "__main__":
         guest_name="John Doe",
         guest_car_number="1234XYZ",
         booking_start=datetime.now(),
-        booking_end=datetime.now() + timedelta(hours=2),
-        status="confirmed"
+        booking_end=datetime.now() + timedelta(hours=2)
     )
 
     delete_booking(6)

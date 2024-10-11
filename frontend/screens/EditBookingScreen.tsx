@@ -31,8 +31,16 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
 
   const [guestName, setGuestName] = useState(initialGuestName)
   const [vehicleNumber, setVehicleNumber] = useState(initialVehicleNumber);
-  const [startDateTime, setStartDateTime] = useState(new Date(initialStartDateTime));
-  const [endDateTime, setEndDateTime] = useState(new Date(initialEndDateTime));
+  const [startDateTime, setStartDateTime] = useState(() => {
+    const now = new Date();
+    now.setHours(now.getHours() + 1); // Add 1 hour to the current time
+    return now;
+  });
+  const [endDateTime, setEndDateTime] = useState(() => {
+    const now = new Date();
+    now.setHours(now.getHours() + 2); // Add 2 hour to the current time
+    return now;
+  });
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [parkingId, setParkingId] = useState(initialParkingId);

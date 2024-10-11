@@ -15,6 +15,7 @@ from db.users_operations import login, is_user_manager, create_new_user, remove_
 from db.booking_operations import search_booking_by_license_plate  # Import the new function
 from db.buildings_operations import get_buildings_list
 from db.parkings_operations import get_parkings_statuses
+from db.parkings_operations import get_parking_location
 from datetime import datetime
 from helpers import adjust_timezone_formatting
 
@@ -44,8 +45,7 @@ def CreateNewBooking(req: func.HttpRequest) -> func.HttpResponse:
             guest_name=req_body['guest_name'],
             guest_car_number=req_body['guest_car_number'],
             start_time=start_time,
-            end_time=end_time,
-            status=req_body['status']
+            end_time=end_time
         )
 
         if new_booking_id > 0:
@@ -318,6 +318,51 @@ def GetBookingsDetails(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json"
         )
     
+@app.route(route="GetParkingDirections", auth_level=func.AuthLevel.ANONYMOUS)
+def GetParkingDirections(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: GetParkingDirections.')
+
+    try:
+        req_body = req.get_json()
+        logging.info(req_body)
+    except ValueError:
+        return func.HttpResponse(
+            json.dumps({"error": "Invalid request"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    parking_id = req_body.get('parking_id')
+    if not parking_id:
+        return func.HttpResponse(
+            json.dumps({"error": "parking_id required"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    try:
+        parking_location = get_parking_location(parking_id)
+        if parking_location:
+            logging.info(f"Parking location fetched successfully for parking ID: {parking_id}")
+            return func.HttpResponse(
+                body=json.dumps({"location": parking_location}),
+                status_code=200,
+                mimetype="application/json"
+            )
+        else:
+            return func.HttpResponse(
+                json.dumps({"error": f"Parking of parking ID {parking_id} not found."}),
+                status_code=404,
+                mimetype="application/json"
+            )
+    except Exception as e:
+        logging.error(f"Error in GetParkingDirections: {e}")
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}),
+            status_code=500,
+            mimetype="application/json"
+        )
+
 @app.route(route="ReadLicensePlate", methods=['POST'], auth_level=func.AuthLevel.ANONYMOUS)
 def ReadLicensePlate(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request: ReadLicensePlate.')
