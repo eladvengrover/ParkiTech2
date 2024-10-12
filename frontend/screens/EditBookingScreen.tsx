@@ -27,14 +27,14 @@ type EditBookingScreenRouteProp = RouteProp<RootStackParamList, 'EditBooking'>;
 
 const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<EditBookingScreenRouteProp>();
-  const { tenantId, bookingId, vehicleNumber: initialVehicleNumber, startDateTime: initialStartDateTime, endDateTime: initialEndDateTime, parkingId: initialParkingId} = route.params;
+  const { tenantId, bookingId, vehicleNumber: initialVehicleNumber, startDateTime: initialStartDateTime, endDateTime: initialEndDateTime, parkingNumber: initialparkingNumber} = route.params;
 
   const [vehicleNumber, setVehicleNumber] = useState(initialVehicleNumber);
   const [startDateTime, setStartDateTime] = useState(new Date(initialStartDateTime));
   const [endDateTime, setEndDateTime] = useState(new Date(initialEndDateTime));
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
-  const [parkingId, setParkingId] = useState(initialParkingId);
+  const [parkingNumber, setparkingNumber] = useState(initialparkingNumber);
 
   const handleSave = async () => {
     const validationRes = validateBooking();
@@ -193,7 +193,7 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
         />
       )}
       <Text style={commonStyles.dateText}>Selected End: {formatDateTime(endDateTime)}</Text>
-      <Text style={commonStyles.dateText}>Parking ID: {parkingId}</Text>
+      <Text style={commonStyles.dateText}>Parking Number: {parkingNumber}</Text>
             <TouchableOpacity style={commonStyles.button} onPress={handleSave}>
         <Text style={commonStyles.buttonText}>Save</Text>
       </TouchableOpacity>

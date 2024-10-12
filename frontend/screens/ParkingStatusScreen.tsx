@@ -86,6 +86,7 @@ const ParkingStatusScreen: React.FC<Props> = ({ navigation }) => {
         )}
       >
         <View style={[commonStyles.row, rowStyle]}>
+        <Text style={commonStyles.cell}>{item.parking_id}</Text>
           <Text style={commonStyles.cell}>{item.parking_number}</Text>
           <Text style={commonStyles.cell}>{item.status}</Text>
           <Text style={commonStyles.cell}>{isOccupied ? item.booking_id || '-' : '-'}</Text>
@@ -100,6 +101,7 @@ const ParkingStatusScreen: React.FC<Props> = ({ navigation }) => {
       <Text style={commonStyles.title}>Parking Statuses</Text>
       <View style={commonStyles.table}>
         <View style={commonStyles.headerRow}>
+        <Text style={commonStyles.headerCell}>Parking ID</Text>
           <Text style={commonStyles.headerCell}>Parking Number</Text>
           <Text style={commonStyles.headerCell}>Status</Text>
           <Text style={commonStyles.headerCell}>Booking ID</Text>

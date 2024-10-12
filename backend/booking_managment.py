@@ -294,15 +294,21 @@ def remove_booking(booking_id):
 
 def get_bookings_details(resident_id):
     try:
-        # Fetch all existing bookings for the given resident_id
-        existing_bookings = session.query(Booking).filter_by(resident_id=resident_id).all()
+        existing_bookings = session.query(
+            Booking.id,
+            Booking.guest_car_number,
+            Booking.booking_start,
+            Booking.booking_end,
+            Parking.parking_number
+            ).join(Parking, Booking.parking_id == Parking.parking_id).filter(
+            and_(Booking.resident_id == resident_id)).all()
         bookings_list = [
             {
                 "id": booking.id,
                 "vehicle_number": booking.guest_car_number,
                 "start_date_time": booking.booking_start.isoformat(),
                 "end_date_time": booking.booking_end.isoformat(),
-                "parking_id": booking.parking_id
+                "parking_number": booking.parking_number
             }
             for booking in existing_bookings
         ]
