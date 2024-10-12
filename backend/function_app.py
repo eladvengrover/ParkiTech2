@@ -11,7 +11,7 @@ from msrest.authentication import CognitiveServicesCredentials # type: ignore
 from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details, delete_past_bookings
 from db.users_operations import login, is_user_manager, create_new_user, remove_user
 from db.booking_operations import search_booking_by_license_plate  # Import the new function
-from db.buildings_operations import get_buildings_list
+from db.buildings_operations import get_buildings_list, get_building_locations_list
 from db.parkings_operations import get_parkings_statuses
 from db.parkings_operations import get_parking_location_and_number, get_parking_building_id
 
@@ -506,6 +506,33 @@ def GetBuildingList(req: func.HttpRequest) -> func.HttpResponse:
             )
     except Exception as e:
         logging.error(f"Error in GetBuildingList: {e}")
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}),
+            status_code=500,
+            mimetype="application/json"
+        )
+    
+@app.route(route="GetBuildingLocationsList", methods=['GET'], auth_level=func.AuthLevel.ANONYMOUS)
+def GetBuildingLocationsList(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: GetBuildingLocationsList.')
+
+    try:
+        buildings_list = get_building_locations_list()
+        if buildings_list:
+            logging.info(f"building locations list list fetched successfully")
+            return func.HttpResponse(
+                body=json.dumps(buildings_list),
+                status_code=200,
+                mimetype="application/json"
+            )
+        else:
+            return func.HttpResponse(
+                json.dumps({"error": f"building locations list not found."}),
+                status_code=404,
+                mimetype="application/json"
+            )
+    except Exception as e:
+        logging.error(f"Error in GetBuildingLocationsList: {e}")
         return func.HttpResponse(
             json.dumps({"error": str(e)}),
             status_code=500,

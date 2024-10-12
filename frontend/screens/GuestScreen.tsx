@@ -14,19 +14,41 @@ type Props = {
   navigation: HomeScreenNavigationProp;
 };
 
-// WHEN DB HAS REAL COORDINATES CHANGE THIS TO GET THEM FROM THE DB
-const LOCATIONS = [
-  { name: 'Gur', latitude: 32.06916340304336, longitude: 34.77973298543931, buildingId: 1 },
-  { name: 'Building 2', latitude: 34.060692, longitude: 36.772607, buildingId: 2 },
-  { name: 'Building 3', latitude: 32.06916340304336, longitude: 34.77973298543931, buildingId: 3 },
-];
 const GuestScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{ latitude: number, longitude: number } | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [closestLocation, setClosestLocation] = useState<{ name: string, distance: number, buildingId: number } | null>(null);
+  const [buildings, setBuildings] = useState<any[]>([]);  // To store fetched buildings from backend
 
+
+  useEffect(() => {
+    // Fetch the list of buildings from the backend
+    const fetchBuildings = async () => {
+      try {
+        const response = await fetch('https://parkitect.azurewebsites.net/api/GetBuildingLocationsList', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          setBuildings(data);  // Set the fetched building data to state
+        } else {
+          console.error('Error fetching buildings list', data);
+          Alert.alert('Error', 'Failed to fetch building locations.');
+        }
+      } catch (error) {
+        console.error('Error fetching buildings list:', error);
+        Alert.alert('Error', 'An error occurred while fetching building locations.');
+      }
+    };
+
+    fetchBuildings();
+  }, []);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -50,9 +72,11 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
           longitude: location.coords.longitude,
         });
 
-        // Find the closest building
-        const closest = findClosestLocation(location.coords.latitude, location.coords.longitude);
-        setClosestLocation(closest);
+        // Find the closest building after user location is set and buildings are fetched
+        if (buildings.length > 0) {
+          const closest = findClosestLocation(location.coords.latitude, location.coords.longitude, buildings);
+          setClosestLocation(closest);
+        }
 
       } catch (error) {
         console.error(error);
@@ -62,8 +86,10 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
       }
     };
 
-    fetchLocation();
-  }, []);
+    if (buildings.length > 0) {
+      fetchLocation();  // Fetch location only after building data is available
+    }
+  }, [buildings]);
 
   const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371; // Radius of the Earth in km
@@ -76,18 +102,18 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
     return R * c * 1000; // Distance in meters
   };
 
-  const findClosestLocation = (userLat: number, userLon: number) => {
+  const findClosestLocation = (userLat: number, userLon: number, buildings: any[]) => {
     let closest = null;
     let minDistance = Number.MAX_VALUE;
 
-    LOCATIONS.forEach(location => {
-      const distance = getDistance(userLat, userLon, location.latitude, location.longitude);
+    buildings.forEach((building: any) => {
+      const distance = getDistance(userLat, userLon, building.building_address_latitude, building.building_address_longitude);
       if (distance < minDistance) {
         minDistance = distance;
         closest = {
-          name: location.name,
+          name: building.building_name,
           distance,
-          buildingId: location.buildingId,
+          buildingId: building.building_id,
         };
       }
     });
