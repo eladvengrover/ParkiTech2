@@ -94,7 +94,6 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
       guest_car_number: vehicleNumber,
       booking_start: startDateTime.toISOString(),
       booking_end: endDateTime.toISOString(),
-      status: "confirmed",
     };
 
     try {

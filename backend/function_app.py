@@ -8,13 +8,13 @@ import re  # Import the regular expressions module
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient # type: ignore
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes # type: ignore
 from msrest.authentication import CognitiveServicesCredentials # type: ignore
-from db.booking_operations import add_booking
-from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details
+from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details, delete_past_bookings
 from db.users_operations import login, is_user_manager, create_new_user, remove_user
 from db.booking_operations import search_booking_by_license_plate  # Import the new function
 from db.buildings_operations import get_buildings_list
 from db.parkings_operations import get_parkings_statuses
-from db.parkings_operations import get_parking_location_and_number
+from db.parkings_operations import get_parking_location_and_number, get_parking_building_id
+
 from datetime import datetime
 from helpers import adjust_timezone_formatting
 
@@ -128,8 +128,7 @@ def UpdateBooking(req: func.HttpRequest) -> func.HttpResponse:
             guest_name=req_body['guest_name'],
             guest_car_number=req_body['guest_car_number'],
             start_time=start_time,
-            end_time=end_time,
-            status=req_body['status']
+            end_time=end_time
         )
 
         if updated_booking_id:
@@ -512,3 +511,60 @@ def GetBuildingList(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
             mimetype="application/json"
         )
+    
+@app.route(route="GetBuildingIdByParkingId", methods=['POST'], auth_level=func.AuthLevel.ANONYMOUS)
+def GetBuildingIdByParkingId(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: GetBuildingIdByParkingId.')
+
+    try:
+        req_body = req.get_json()
+        logging.info(req_body)
+    except ValueError:
+        return func.HttpResponse(
+            json.dumps({"error": "Invalid request"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    parking_id = req_body.get('parking_id')
+    if not parking_id:
+        return func.HttpResponse(
+            json.dumps({"error": "parking_id required"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    try:
+        building_id = get_parking_building_id(parking_id)
+        if building_id:
+            logging.info(f"building id fetched successfully for parking ID: {parking_id}")
+            return func.HttpResponse(
+                body=json.dumps(building_id),
+                status_code=200,
+                mimetype="application/json"
+            )
+        else:
+            return func.HttpResponse(
+                json.dumps({"error": f"building id of parking ID {parking_id} not found."}),
+                status_code=404,
+                mimetype="application/json"
+            )
+    except Exception as e:
+        logging.error(f"Error in GetBuildingIdByParkingId: {e}")
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}),
+            status_code=500,
+            mimetype="application/json"
+        )
+    
+# Timer-triggered function that runs every hour to delete past bookings
+@app.function_name(name="DeletePastBookings")
+@app.schedule(schedule="0 0 * * * *", arg_name="mytimer", run_on_startup=False, use_monitor=True)
+def timer_delete_past_bookings(mytimer: func.TimerRequest) -> None:
+    logging.info('Python Timer trigger function ran at: %s', datetime.datetime.now())
+
+    try:
+        # Call the function from booking_management
+        delete_past_bookings()  # This calls the imported function
+    except Exception as e:
+        logging.error(f"Error in timer_delete_past_bookings: {e}")

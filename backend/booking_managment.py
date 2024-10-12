@@ -4,6 +4,7 @@ from db.db_types.parking_availability_types import ParkingAvailability
 from sqlalchemy import and_ # type: ignore
 from sqlalchemy.orm.exc import NoResultFound # type: ignore
 import datetime
+import logging
 
 NUM_PARKING_SPACES = 100
 
@@ -226,11 +227,11 @@ def remove_bookings_by_user_id(user_id):
             remove_booking(booking.id)
         
         session.commit()  # Commit the transaction
-        print(f"All bookings for user ID {user_id} have been removed.")
+        logging.info(f"All bookings for user ID {user_id} have been removed.")
     
     except Exception as e:
         session.rollback()  # Roll back the transaction in case of error
-        print(f"An error occurred while removing bookings for user ID {user_id}: {e}")
+        logging.info(f"An error occurred while removing bookings for user ID {user_id}: {e}")
 
 
 def remove_booking(booking_id):
@@ -277,6 +278,23 @@ def get_bookings_details(resident_id):
         return bookings_list
     except Exception as e:
         return None
+    
+def delete_past_bookings():
+    current_time = datetime.datetime.now() + datetime.timedelta(hours=3)  # Adjust for your timezone
+    logging.info(f"Current time: {current_time}")
+
+    try:
+        past_bookings = session.query(Booking).filter(Booking.booking_end < current_time).all()
+        logging.info(f"Past bookings found: {len(past_bookings)}")
+
+        if past_bookings:
+            for booking in past_bookings:
+                remove_booking(booking_id=booking.id)  # Assuming remove_booking is another function
+                logging.info(f"Deleted booking with ID: {booking.id} - End time was {booking.booking_end}")
+        else:
+            logging.info("No past bookings found.")
+    except Exception as e:
+        logging.error(f"Error querying or deleting past bookings: {e}")
     
     
 
