@@ -61,6 +61,7 @@ const ViewBuildingScreen: React.FC<Props> = ({ navigation }) => {
     navigation.navigate('ParkingStatus', { 
       managerId, 
       buildingId: item.building_id, 
+      buildingName: item.building_name
     });
   };
 
@@ -75,6 +76,7 @@ const ViewBuildingScreen: React.FC<Props> = ({ navigation }) => {
           keyExtractor={(item) => item.building_id.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => handlePress(item)} style={commonStyles.bookingItem}>
+              <Text>Building ID: {item.building_id}</Text>
               <Text>Building Name: {item.building_name}</Text>
               <Text>Building Address: {item.building_address}</Text>
             </TouchableOpacity>

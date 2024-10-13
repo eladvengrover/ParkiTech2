@@ -1,15 +1,19 @@
 from db.connection import session
 from db.db_types.booking_table_types import Booking
 from db.db_types.parking_availability_types import ParkingAvailability
-from sqlalchemy import and_ # type: ignore
-from sqlalchemy.orm.exc import NoResultFound # type: ignore
+from db.db_types.users_table_types import User
+from db.db_types.parking_table_types import Parking
+
+from sqlalchemy import and_
+from sqlalchemy.orm.exc import NoResultFound
+
 import datetime
 import logging
 
 NUM_PARKING_SPACES = 100
 
 # Function not relevant for current basic flow
-def rearrange_bookings_and_insert(start_time, end_time, resident_id, guest_name, guest_car_number, status):
+def rearrange_bookings_and_insert(start_time, end_time, resident_id, guest_name, guest_car_number):
     now = datetime.datetime.now()
     conflicting_bookings = session.query(ParkingAvailability).filter(
         and_(
@@ -32,7 +36,7 @@ def rearrange_bookings_and_insert(start_time, end_time, resident_id, guest_name,
                     # Check if the original slot is now available for the new booking
                     if is_time_slot_available(original_parking_id, start_time, end_time):
                         # Insert the new booking
-                        new_booking_id = create_booking(resident_id, guest_name, guest_car_number, start_time, end_time, status, original_parking_id)
+                        new_booking_id = create_booking(resident_id, guest_name, guest_car_number, start_time, end_time, original_parking_id)
                         return new_booking_id
 
                     # If it didn't work, undo the move
@@ -165,12 +169,26 @@ def find_best_parking(available_parkings, start_time, end_time):
 
 
 def allocate_and_book_parking(resident_id, guest_name, guest_car_number, start_time, end_time):
-    available_parkings = session.query(ParkingAvailability).filter(
+    # Step 1: Fetch the resident's building ID
+    resident = session.query(User).filter_by(id=resident_id).first()
+
+    if not resident:
+        return (-1, -1)
+    
+    building_id = resident.building_id
+
+    # Step 2: Join ParkingAvailability and Parking tables to filter by building_id
+    available_parkings = session.query(ParkingAvailability).join(
+        Parking, ParkingAvailability.parking_id == Parking.parking_id
+    ).filter(
         and_(
             ParkingAvailability.status == 'Available',
             ParkingAvailability.start_time <= start_time,
-            ParkingAvailability.end_time >= end_time
-        )).all()
+            ParkingAvailability.end_time >= end_time,
+            Parking.building_id == building_id,
+            Parking.is_permanently_blocked == False
+        )
+    ).all()
 
     if not available_parkings:
         return (-5, -1)  # Return -5 if no available parkings found
@@ -233,6 +251,22 @@ def remove_bookings_by_user_id(user_id):
         session.rollback()  # Roll back the transaction in case of error
         logging.info(f"An error occurred while removing bookings for user ID {user_id}: {e}")
 
+def remove_bookings_by_parking_id(parking_id):
+    try:
+        # Fetch all bookings associated with the given parking ID
+        existing_bookings = session.query(Booking).filter_by(parking_id=parking_id).all()
+        
+        # Iterate over the bookings and remove each one
+        for booking in existing_bookings:
+            remove_booking(booking.id)
+            
+        session.commit()  # Commit the transaction
+        print(f"All bookings for parking ID {parking_id} have been removed.")
+    
+    except Exception as e:
+        session.rollback()  # Roll back the transaction in case of error
+        print(f"An error occurred while removing bookings for parking ID {parking_id}: {e}")
+
 
 def remove_booking(booking_id):
     try:
@@ -262,8 +296,15 @@ def remove_booking(booking_id):
 
 def get_bookings_details(resident_id):
     try:
-        # Fetch all existing bookings for the given resident_id
-        existing_bookings = session.query(Booking).filter_by(resident_id=resident_id).all()
+        existing_bookings = session.query(
+            Booking.id,
+            Booking.guest_car_number,
+            Booking.booking_start,
+            Booking.booking_end,
+            Parking.parking_number,
+            Parking.parking_id
+            ).join(Parking, Booking.parking_id == Parking.parking_id).filter(
+            and_(Booking.resident_id == resident_id)).all()
         bookings_list = [
             {
                 "guest_name": booking.guest_name,
@@ -271,7 +312,8 @@ def get_bookings_details(resident_id):
                 "vehicle_number": booking.guest_car_number,
                 "start_date_time": booking.booking_start.isoformat(),
                 "end_date_time": booking.booking_end.isoformat(),
-                "parking_id": booking.parking_id
+                "parking_number": booking.parking_number,
+              "parking_id":booking.parking_id
             }
             for booking in existing_bookings
         ]
@@ -304,8 +346,8 @@ if __name__ == "__main__":
         guest_name="Elad2",
         guest_car_number="1234XYZ",
         start_time=datetime.datetime.now() + datetime.timedelta(days=1),
-        end_time=datetime.datetime.now() + datetime.timedelta(days=1) + datetime.timedelta(hours=2),
-        
+        end_time=datetime.datetime.now() + datetime.timedelta(days=1) + datetime.timedelta(hours=2)
+
     )
 
 def search_booking_by_license_plate(license_plate):
@@ -314,8 +356,7 @@ def search_booking_by_license_plate(license_plate):
         and_(
             Booking.guest_car_number == license_plate,
             Booking.booking_start <= current_time,
-            Booking.booking_end >= current_time,
-            
+            Booking.booking_end >= current_time
         )
     ).first()
     return booking
