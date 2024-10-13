@@ -619,16 +619,16 @@ def CreateNewParking(req: func.HttpRequest) -> func.HttpResponse:
                               status_code=200,
                 mimetype="application/json"
             )
-        else:
-                      logging.error("Error in CreateNewParking: some fields are incorrect.")
-            return func.HttpResponse(
+      else:
+        logging.error("Error in CreateNewParking: some fields are incorrect.")
+        return func.HttpResponse(
                 json.dumps({"error": "some fields are incorrect"}),
                 status_code=403,
                 mimetype="application/json"
             )
     except Exception as e:
         logging.error(f"Error in CreateNewParking: {e}")
-                return func.HttpResponse(
+        return func.HttpResponse(
             json.dumps({"error": str(e)}),
             status_code=500,
             mimetype="application/json"
@@ -654,9 +654,8 @@ def GetBuildingIdByParkingId(req: func.HttpRequest) -> func.HttpResponse:
                       status_code=400,
             mimetype="application/json"
         )
-
     try:
-              building_id = get_parking_building_id(parking_id)
+        building_id = get_parking_building_id(parking_id)
         if building_id:
             logging.info(f"building id fetched successfully for parking ID: {parking_id}")
             return func.HttpResponse(
@@ -672,7 +671,7 @@ def GetBuildingIdByParkingId(req: func.HttpRequest) -> func.HttpResponse:
             )
     except Exception as e:
         logging.error(f"Error in GetBuildingIdByParkingId: {e}")
-                return func.HttpResponse(
+        return func.HttpResponse(
             json.dumps({"error": str(e)}),
             status_code=500,
             mimetype="application/json"
