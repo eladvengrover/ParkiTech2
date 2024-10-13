@@ -27,11 +27,19 @@ type EditBookingScreenRouteProp = RouteProp<RootStackParamList, 'EditBooking'>;
 
 const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<EditBookingScreenRouteProp>();
-  const { tenantId, bookingId, vehicleNumber: initialVehicleNumber, startDateTime: initialStartDateTime, endDateTime: initialEndDateTime, parkingNumber: initialparkingNumber} = route.params;
-
+  const { tenantId, bookingId, guestName: initialGuestName, vehicleNumber: initialVehicleNumber, startDateTime: initialStartDateTime, endDateTime: initialEndDateTime, parkingNumber: initialparkingNumber, parkingId: initialParkingId} = route.params;
+  const [guestName, setGuestName] = useState(initialGuestName)
   const [vehicleNumber, setVehicleNumber] = useState(initialVehicleNumber);
-  const [startDateTime, setStartDateTime] = useState(new Date(initialStartDateTime));
-  const [endDateTime, setEndDateTime] = useState(new Date(initialEndDateTime));
+  const [startDateTime, setStartDateTime] = useState(() => {
+    const now = new Date();
+    now.setHours(now.getHours() + 1); // Add 1 hour to the current time
+    return now;
+  });
+  const [endDateTime, setEndDateTime] = useState(() => {
+    const now = new Date();
+    now.setHours(now.getHours() + 2); // Add 2 hour to the current time
+    return now;
+  });
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [parkingNumber, setparkingNumber] = useState(initialparkingNumber);
@@ -81,7 +89,7 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
     const bookingData = {
       booking_id: bookingId,
       resident_id: tenantId,
-      guest_name: "Shahar",  // TODO - Replace with actual data
+      guest_name: guestName,
       guest_car_number: vehicleNumber,
       booking_start: startDateTime.toISOString(),
       booking_end: endDateTime.toISOString()
@@ -165,43 +173,70 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={commonStyles.container}>
-      <Text style={commonStyles.title}>Edit Booking</Text>
+      <Text style={commonStyles.title}>Edit Your Booking</Text>
+
+      {/* Guest Name Input */}
+      <Text style={commonStyles.label}>Guest Name</Text>
       <TextInput
         style={commonStyles.input}
-        placeholder="Vehicle Number"
+        placeholder="Enter Guest Name"
+        value={guestName}
+        onChangeText={setGuestName}
+      />
+
+      {/* Vehicle Number Input */}
+      <Text style={commonStyles.label}>Vehicle Number</Text>
+      <TextInput
+        style={commonStyles.input}
+        placeholder="Enter Vehicle Number"
         value={vehicleNumber}
         onChangeText={setVehicleNumber}
       />
-      <Button title="Select Start Date and Time" onPress={() => setShowStartPicker(true)} />
-      {showStartPicker && (
-        <DateTimePicker
-          value={startDateTime}
-          mode="datetime"
-          display="default"
-          onChange={handleStartChange}
-        />
-      )}
-      <Text style={commonStyles.dateText}>Selected Start: {formatDateTime(startDateTime)}</Text>
-      
-      <Button title="Select End Date and Time" onPress={() => setShowEndPicker(true)} />
-      {showEndPicker && (
-        <DateTimePicker
-          value={endDateTime}
-          mode="datetime"
-          display="default"
-          onChange={handleEndChange}
-        />
-      )}
-      <Text style={commonStyles.dateText}>Selected End: {formatDateTime(endDateTime)}</Text>
-      <Text style={commonStyles.dateText}>Parking Number: {parkingNumber}</Text>
-            <TouchableOpacity style={commonStyles.button} onPress={handleSave}>
-        <Text style={commonStyles.buttonText}>Save</Text>
+  
+      {/* Start Time Section */}
+      <View style={commonStyles.section}>
+        <Text style={commonStyles.label}>Start Time</Text>
+        <Button title="Choose Start Time" onPress={() => setShowStartPicker(prevState => !prevState)} // Toggle start picker
+      />
+        {showStartPicker && (
+          <DateTimePicker
+            value={startDateTime}
+            mode="datetime"
+            display="spinner"
+            onChange={handleStartChange}
+          />
+        )}
+        <Text style={commonStyles.dateText}>Selected Start: {formatDateTime(startDateTime)}</Text>
+      </View>
+  
+      {/* End Time Section */}
+      <View style={commonStyles.section}>
+        <Text style={commonStyles.label}>End Time</Text>
+        <Button title="Choose End Time" onPress={() => setShowEndPicker(prevState => !prevState)} // Toggle end picker
+      />
+        {showEndPicker && (
+          <DateTimePicker
+            value={endDateTime}
+            mode="datetime"
+            display="spinner"
+            onChange={handleEndChange}
+          />
+        )}
+        <Text style={commonStyles.dateText}>Selected End: {formatDateTime(endDateTime)}</Text>
+      </View>
+  
+      {/* Save Button */}
+      <TouchableOpacity style={commonStyles.button} onPress={handleSave}>
+        <Text style={commonStyles.buttonText}>Save Changes</Text>
       </TouchableOpacity>
+  
+      {/* Delete Button */}
       <TouchableOpacity style={commonStyles.deleteButton} onPress={handleDelete}>
-        <Text style={commonStyles.buttonText}>Delete</Text>
+        <Text style={commonStyles.buttonText}>Delete Booking</Text>
       </TouchableOpacity>
     </View>
   );
+  
 };
 
 export default EditBookingScreen;

@@ -1,6 +1,7 @@
 from .connection import session
 from .db_types.users_table_types import User
 from booking_managment import remove_bookings_by_user_id
+import logging
 
 def remove_user(username):
     try:
@@ -8,7 +9,7 @@ def remove_user(username):
         existing_user = session.query(User).filter_by(username=username).first()
         
         if not existing_user:
-            print(f"Username '{username}' doesn't exist. Please choose a different username.")
+            logging.info(f"Username '{username}' doesn't exist. Please choose a different username.")
             return -1
         
         user_id = existing_user.id
@@ -18,11 +19,11 @@ def remove_user(username):
 
         remove_bookings_by_user_id(user_id)
 
-        print(f"User '{username}' has been removed")
+        logging.info(f"User '{username}' has been removed")
         return user_id
     except Exception as e:
         session.rollback()
-        print(f"An error occurred: {e}")
+        logging.info(f"An error occurred: {e}")
         return -1
 
 
@@ -32,7 +33,7 @@ def create_new_user(username, password, is_manager, building_id):
         existing_user = session.query(User).filter_by(username=username).first()
         
         if existing_user:
-            print(f"Username '{username}' already exists. Please choose a different username.")
+            logging.info(f"Username '{username}' already exists. Please choose a different username.")
             return -1
         
         # If username does not exist, create a new user
@@ -44,11 +45,11 @@ def create_new_user(username, password, is_manager, building_id):
         )
         session.add(new_user)
         session.commit()
-        print(f"User added with username: {new_user.username}")
+        logging.info(f"User added with username: {new_user.username}")
         return new_user.id
     except Exception as e:
         session.rollback()
-        print(f"An error occurred: {e}")
+        logging.info(f"An error occurred: {e}")
         return -1
 
 def update_user_password(username, new_password):
@@ -60,12 +61,12 @@ def update_user_password(username, new_password):
         if user:
             user.password = new_password
             session.commit()
-            print(f"Password for user '{username}' updated successfully.")
+            logging.info(f"Password for user '{username}' updated successfully.")
         else:
-            print(f"User '{username}' not found.")
+            logging.info(f"User '{username}' not found.")
     except Exception as e:
         session.rollback()
-        print(f"An error occurred: {e}")
+        logging.info(f"An error occurred: {e}")
 
 
 def is_user_manager(username):
@@ -95,6 +96,6 @@ if __name__ == "__main__":
         is_manager=False,
         building_id=1
     )
-    print(login("Elad", "111111"))
-    print(login("Elad", "11111e"))
-    print(login("Gur", "123456"))
+    logging.info(login("Elad", "111111"))
+    logging.info(login("Elad", "11111e"))
+    logging.info(login("Gur", "123456"))

@@ -14,13 +14,33 @@ type Props = {
   navigation: CreateBookingScreenNavigationProp;
 };
 
+const formatDateTime = (date: Date) => {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date);
+};
+
 const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<CreateBookingScreenRouteProp>();
   const { tenantId: tenantId } = route.params;  
   
   const [vehicleNumber, setVehicleNumber] = useState('');
-  const [startDateTime, setStartDateTime] = useState(new Date());
-  const [endDateTime, setEndDateTime] = useState(new Date());
+  const [guestName, setGuestName] = useState('');
+  const [startDateTime, setStartDateTime] = useState(() => {
+    const now = new Date();
+    now.setHours(now.getHours() + 1); // Add 1 hour to the current time
+    return now;
+  });
+  const [endDateTime, setEndDateTime] = useState(() => {
+    const now = new Date();
+    now.setHours(now.getHours() + 2); // Add 2 hour to the current time
+    return now;
+  });
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
 
@@ -60,7 +80,7 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
     const now = new Date();
 
     // Validation checks
-    if (!vehicleNumber || !startDateTime || !endDateTime) {
+    if (!vehicleNumber || !guestName || !startDateTime || !endDateTime) {
       Alert.alert('Error', 'All fields must be filled.');
       return false;
     }
@@ -82,6 +102,7 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
   const submitBooking = async () => {
     console.log('------------------------------------');
     console.log('Vehicle Number:', vehicleNumber);
+    console.log('Guest Name:', guestName);
     console.log('Order Start Date and Time:', startDateTime);
     console.log('Order End Date and Time:', endDateTime);
     console.log('------------------------------------');
@@ -91,7 +112,7 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
 
     const bookingData = {
       resident_id: tenantId,
-      guest_name: "Shahar",  // TODO - Replace with actual data
+      guest_name: guestName,
       guest_car_number: vehicleNumber,
       booking_start: localizedStartDateTime.toISOString(),
       booking_end: localizedEndDateTime.toISOString()
@@ -127,33 +148,48 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={commonStyles.title}>Create a new booking</Text>
         <TextInput
           style={commonStyles.input}
+          placeholder="Guest Name"  // New input for guest name
+          value={guestName}
+          onChangeText={setGuestName}
+        />
+        <TextInput
+          style={commonStyles.input}
           placeholder="Vehicle Number"
           value={vehicleNumber}
           onChangeText={setVehicleNumber}
           keyboardType="numeric"
         />
-        <Button title="Select Start Date and Time" onPress={() => setShowStartPicker(true)} />
+        {/* Start Time Section */}
+      <View style={commonStyles.section}>
+        <Text style={commonStyles.label}>Start Time</Text>
+        <Button title="Choose Start Time" onPress={() => setShowStartPicker(prevState => !prevState)} // Toggle start picker
+      />
         {showStartPicker && (
           <DateTimePicker
             value={startDateTime}
             mode="datetime"
-            display="default"
+            display="spinner"
             onChange={handleStartChange}
           />
         )}
-        <Text style={commonStyles.dateText}>Selected Start: {startDateTime.toLocaleString()}</Text>
-        
-        <Button title="Select End Date and Time" onPress={() => setShowEndPicker(true)} />
+        <Text style={commonStyles.dateText}>Selected Start: {formatDateTime(startDateTime)}</Text>
+      </View>
+  
+      {/* End Time Section */}
+      <View style={commonStyles.section}>
+        <Text style={commonStyles.label}>End Time</Text>
+        <Button title="Choose End Time" onPress={() => setShowEndPicker(prevState => !prevState)} // Toggle end picker
+      />
         {showEndPicker && (
           <DateTimePicker
             value={endDateTime}
             mode="datetime"
-            display="default"
+            display="spinner"
             onChange={handleEndChange}
           />
         )}
-        <Text style={commonStyles.dateText}>Selected End: {endDateTime.toLocaleString()}</Text>
-        
+        <Text style={commonStyles.dateText}>Selected End: {formatDateTime(endDateTime)}</Text>
+      </View>
         <TouchableOpacity style={commonStyles.button} onPress={handleSubmit}>
           <Text style={commonStyles.buttonText}>Submit</Text>
         </TouchableOpacity>

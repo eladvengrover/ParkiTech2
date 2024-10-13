@@ -6,8 +6,7 @@ import { RootStackParamList } from '../types';
 import commonStyles from './commonStyles';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
-import { MaterialIcons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
+import { MaterialIcons } from '@expo/vector-icons';  
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Guest'>;
 
@@ -15,16 +14,41 @@ type Props = {
   navigation: HomeScreenNavigationProp;
 };
 
-const URIEL_ACOSTA_COORDINATES = {
-  latitude: 32.057692,
-  longitude: 34.769607,
-};
-
 const GuestScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{ latitude: number, longitude: number } | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [closestLocation, setClosestLocation] = useState<{ name: string, distance: number, buildingId: number } | null>(null);
+  const [buildings, setBuildings] = useState<any[]>([]);  // To store fetched buildings from backend
+
+
+  useEffect(() => {
+    // Fetch the list of buildings from the backend
+    const fetchBuildings = async () => {
+      try {
+        const response = await fetch('https://parkitect.azurewebsites.net/api/GetBuildingLocationsList', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          setBuildings(data);  // Set the fetched building data to state
+        } else {
+          console.error('Error fetching buildings list', data);
+          Alert.alert('Error', 'Failed to fetch building locations.');
+        }
+      } catch (error) {
+        console.error('Error fetching buildings list:', error);
+        Alert.alert('Error', 'An error occurred while fetching building locations.');
+      }
+    };
+
+    fetchBuildings();
+  }, []);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -38,9 +62,7 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
         }
 
         const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Highest,
-          maximumAge: 10000,
-          timeout: 5000,
+          accuracy: Location.Accuracy.Highest
         });
 
         console.log("Location received:", location.coords);
@@ -50,6 +72,12 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
           longitude: location.coords.longitude,
         });
 
+        // Find the closest building after user location is set and buildings are fetched
+        if (buildings.length > 0) {
+          const closest = findClosestLocation(location.coords.latitude, location.coords.longitude, buildings);
+          setClosestLocation(closest);
+        }
+
       } catch (error) {
         console.error(error);
         Alert.alert('Failed to get location');
@@ -58,8 +86,10 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
       }
     };
 
-    fetchLocation();
-  }, []);
+    if (buildings.length > 0) {
+      fetchLocation();  // Fetch location only after building data is available
+    }
+  }, [buildings]);
 
   const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371; // Radius of the Earth in km
@@ -72,6 +102,25 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
     return R * c * 1000; // Distance in meters
   };
 
+  const findClosestLocation = (userLat: number, userLon: number, buildings: any[]) => {
+    let closest = null;
+    let minDistance = Number.MAX_VALUE;
+
+    buildings.forEach((building: any) => {
+      const distance = getDistance(userLat, userLon, building.building_address_latitude, building.building_address_longitude);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = {
+          name: building.building_name,
+          distance,
+          buildingId: building.building_id,
+        };
+      }
+    });
+
+    return closest;
+  };
+
   const handleContinue = async () => {
     if (!imageUri) {
       Alert.alert("Please upload an image before continuing.");
@@ -81,18 +130,16 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
     setLoading(true);
 
     // Check if location is available
-    if (!userLocation) {
+    if (!userLocation || !closestLocation) {
       Alert.alert('Location Issue', 'Location not available. Please try again.');
       setLoading(false);
       return;
     }
 
     try {
-      // Check if the user is near the hard-coded location
-      const distance = getDistance(userLocation.latitude, userLocation.longitude, URIEL_ACOSTA_COORDINATES.latitude, URIEL_ACOSTA_COORDINATES.longitude);
-
-      if (distance > 300) {
-        Alert.alert('Location Issue', 'You are too far from Uriel Acosta Street.');
+      // Check the distance to the closest location CHANGE THIS TO A REASONABLE NUMBER WHEN THERE ARE NO GPS SCRAMBLES
+      if (closestLocation.distance > 10000000000000) {
+        Alert.alert('Location Issue', `You are too far from ${closestLocation.name}.`);
         setLoading(false);
         return;
       }
@@ -126,8 +173,27 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
 
       // Check the response from the server
       if (typeof responseData === 'string' && responseData.startsWith('Booking found for license plate')) {
-        Alert.alert('Success', responseData.split(":")[0]);
-        navigation.navigate('GuestDirection');
+        const parkingId = Number(responseData.split(":")[1].trim())
+
+        const buildingIdResponse = await fetch('https://parkitect.azurewebsites.net/api/GetBuildingIdByParkingId', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          body: JSON.stringify({ parking_id: parkingId }), // Send parking_id in POST body
+        } );
+
+        const buildingIdData = await buildingIdResponse.json();
+        const buildingId = buildingIdData;
+
+        console.log("Building ID Response:", buildingId);
+
+        if (buildingId === closestLocation.buildingId) {
+          Alert.alert('Success', responseData.split(".")[0]);
+          navigation.navigate('GuestDirection', { parkingId });
+        } else {
+          Alert.alert('Location Issue', 'Building ID of booking does not match the expected one (the closest building to you).');
+        }
       } else if (typeof responseData === 'string' && responseData.startsWith('No booking found')) {
         Alert.alert('No Booking', 'There is no booking available for this license plate.');
       } else {

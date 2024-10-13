@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine, MetaData # type: ignore
 from urllib.parse import quote_plus
 
 # Define connection string and encode it

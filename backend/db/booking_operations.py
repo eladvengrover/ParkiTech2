@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from .connection import session
 from .db_types.booking_table_types import Booking
+import logging
 
 def add_booking(resident_id, guest_name, guest_car_number, booking_start, booking_end):
     new_booking = Booking(
@@ -12,7 +13,7 @@ def add_booking(resident_id, guest_name, guest_car_number, booking_start, bookin
     )
     session.add(new_booking)
     session.commit()
-    print(f"Booking added with ID: {new_booking.id}")
+    logging.info(f"Booking added with ID: {new_booking.id}")
 
 def update_booking(booking_id, **kwargs):
     booking = session.query(Booking).filter_by(id=booking_id).first()
@@ -20,9 +21,9 @@ def update_booking(booking_id, **kwargs):
         for key, value in kwargs.items():
             setattr(booking, key, value)
         session.commit()
-        print(f"Booking with ID: {booking_id} updated.")
+        logging.info(f"Booking with ID: {booking_id} updated.")
     else:
-        print(f"Booking with ID: {booking_id} not found.")
+        logging.info(f"Booking with ID: {booking_id} not found.")
 
 def search_booking_by_license_plate(license_plate):
     current_time = datetime.now() + timedelta(hours=3)
@@ -37,9 +38,9 @@ def delete_booking(booking_id):
     if booking:
         session.delete(booking)
         session.commit()
-        print(f"Booking with ID: {booking_id} deleted.")
+        logging.info(f"Booking with ID: {booking_id} deleted.")
     else:
-        print(f"Booking with ID: {booking_id} not found.")
+        logging.info(f"Booking with ID: {booking_id} not found.")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, DECIMAL, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
+
 Base = declarative_base()
 
 class Building(Base):
