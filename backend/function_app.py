@@ -14,6 +14,7 @@ from db.booking_operations import search_booking_by_license_plate  # Import the 
 from db.buildings_operations import get_buildings_list, get_building_locations_list
 from db.parkings_operations import create_new_parking, get_parkings_statuses, remove_parking, update_parking_details, get_parking_location_and_number, get_parking_building_id
 
+
 from datetime import datetime
 from helpers import adjust_timezone_formatting
 
@@ -444,8 +445,9 @@ def GetParkingsStatuses(req: func.HttpRequest) -> func.HttpResponse:
     
     try:
         parkings_statuses = get_parkings_statuses(building_id)
+        logging.info(parkings_statuses)
         if parkings_statuses:
-            logging.info(f"parking statuses details fetched successfully")
+            logging.info('parking statuses details fetched successfully')
             return func.HttpResponse(
                 body=json.dumps(parkings_statuses),
                 status_code=200,
@@ -458,7 +460,7 @@ def GetParkingsStatuses(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json"
             )
     except Exception as e:
-        logging.error(f"Error in GetParkingsStatuses: {e}")
+        logging.error(f'Error in GetParkingsStatuses: {e}')
         return func.HttpResponse(
             json.dumps({"error": str(e)}),
             status_code=500,
@@ -510,7 +512,7 @@ def GetBuildingList(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
             mimetype="application/json"
         )
-    
+
 @app.route(route="GetBuildingLocationsList", methods=['GET'], auth_level=func.AuthLevel.ANONYMOUS)
 def GetBuildingLocationsList(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request: GetBuildingLocationsList.')
@@ -537,11 +539,15 @@ def GetBuildingLocationsList(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
             mimetype="application/json"
         )
-    
+
+
+
+
+
+        
 @app.route(route="GetBuildingIdByParkingId", methods=['POST'], auth_level=func.AuthLevel.ANONYMOUS)
 def GetBuildingIdByParkingId(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request: GetBuildingIdByParkingId.')
-
     try:
         req_body = req.get_json()
         logging.info(req_body)
@@ -551,26 +557,24 @@ def GetBuildingIdByParkingId(req: func.HttpRequest) -> func.HttpResponse:
             status_code=400,
             mimetype="application/json"
         )
-
     parking_id = req_body.get('parking_id')
     if not parking_id:
         return func.HttpResponse(
             json.dumps({"error": "parking_id required"}),
-            status_code=400,
+                      status_code=400,
             mimetype="application/json"
         )
-
     try:
         building_id = get_parking_building_id(parking_id)
         if building_id:
             logging.info(f"building id fetched successfully for parking ID: {parking_id}")
             return func.HttpResponse(
                 body=json.dumps(building_id),
-                status_code=200,
+                              status_code=200,
                 mimetype="application/json"
             )
         else:
-            return func.HttpResponse(
+                      return func.HttpResponse(
                 json.dumps({"error": f"building id of parking ID {parking_id} not found."}),
                 status_code=404,
                 mimetype="application/json"
@@ -582,6 +586,7 @@ def GetBuildingIdByParkingId(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
             mimetype="application/json"
         )
+        
     
 # Timer-triggered function that runs every hour to delete past bookings
 @app.function_name(name="DeletePastBookings")
@@ -714,3 +719,4 @@ def UpdateParkingDetails(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f"Error in UpdateParkingDetails: {e}")
         return func.HttpResponse(f"Error: {str(e)}", status_code=500)
+

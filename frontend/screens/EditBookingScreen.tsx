@@ -27,8 +27,7 @@ type EditBookingScreenRouteProp = RouteProp<RootStackParamList, 'EditBooking'>;
 
 const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
   const route = useRoute<EditBookingScreenRouteProp>();
-  const { tenantId, bookingId, guestName: initialGuestName, vehicleNumber: initialVehicleNumber, startDateTime: initialStartDateTime, endDateTime: initialEndDateTime, parkingId: initialParkingId} = route.params;
-
+  const { tenantId, bookingId, guestName: initialGuestName, vehicleNumber: initialVehicleNumber, startDateTime: initialStartDateTime, endDateTime: initialEndDateTime, parkingNumber: initialparkingNumber, parkingId: initialParkingId} = route.params;
   const [guestName, setGuestName] = useState(initialGuestName)
   const [vehicleNumber, setVehicleNumber] = useState(initialVehicleNumber);
   const [startDateTime, setStartDateTime] = useState(() => {
@@ -43,7 +42,7 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
   });
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
-  const [parkingId, setParkingId] = useState(initialParkingId);
+  const [parkingNumber, setparkingNumber] = useState(initialparkingNumber);
 
   const handleSave = async () => {
     const validationRes = validateBooking();
@@ -93,7 +92,7 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
       guest_name: guestName,
       guest_car_number: vehicleNumber,
       booking_start: startDateTime.toISOString(),
-      booking_end: endDateTime.toISOString(),
+      booking_end: endDateTime.toISOString()
     };
 
     try {
