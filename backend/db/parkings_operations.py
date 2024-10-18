@@ -16,7 +16,7 @@ from sqlalchemy.orm.exc import NoResultFound # type: ignore
 
 def get_parkings_statuses(building_id):
     try:
-        now = datetime.datetime.now()
+        now = datetime.datetime.now() + datetime.timedelta(hours=3)
         
         # Querying ParkingAvailability with a join on Parking table to filter by building_id
         parking_status = session.query(

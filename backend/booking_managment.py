@@ -14,7 +14,7 @@ NUM_PARKING_SPACES = 100
 
 # Function not relevant for current basic flow
 def rearrange_bookings_and_insert(start_time, end_time, resident_id, guest_name, guest_car_number):
-    now = datetime.datetime.now()
+    now = datetime.datetime.now() + datetime.timedelta(hours=3)
     conflicting_bookings = session.query(ParkingAvailability).filter(
         and_(
             ParkingAvailability.status == 'Occupied',
