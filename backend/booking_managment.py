@@ -299,6 +299,7 @@ def get_bookings_details(resident_id):
         existing_bookings = session.query(
             Booking.id,
             Booking.guest_car_number,
+            Booking.guest_name,
             Booking.booking_start,
             Booking.booking_end,
             Parking.parking_number,
@@ -313,7 +314,7 @@ def get_bookings_details(resident_id):
                 "start_date_time": booking.booking_start.isoformat(),
                 "end_date_time": booking.booking_end.isoformat(),
                 "parking_number": booking.parking_number,
-              "parking_id":booking.parking_id
+                "parking_id":booking.parking_id
             }
             for booking in existing_bookings
         ]

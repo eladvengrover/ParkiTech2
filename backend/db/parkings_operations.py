@@ -127,12 +127,10 @@ def remove_parking(parking_id):
         remove_bookings_by_parking_id(parking_id)
         print(f"Parking '{parking_id}' has been removed")
 
-        existing_parking = session.query(ParkingAvailability).filter_by(parking_id=parking_id).first()
-        if not existing_parking:
-            print(f"Parking ID '{parking_id}' doesn't exist. Please choose a different parking.")
-            return -1        
-        session.delete(existing_parking)
-        session.commit()
+        existing_parking = session.query(ParkingAvailability).filter_by(parking_id=parking_id).all()
+        for parking_slot in existing_parking:
+            session.delete(parking_slot)
+            session.commit()
         return parking_id
    
     except Exception as e:

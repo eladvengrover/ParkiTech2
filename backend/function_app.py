@@ -296,6 +296,7 @@ def GetBookingsDetails(req: func.HttpRequest) -> func.HttpResponse:
     try:
         bookings_details = get_bookings_details(resident_id)
         if bookings_details:
+            logging.info(bookings_details)
             logging.info(f"Bookings details fetched successfully for resident ID: {resident_id}")
             return func.HttpResponse(
                 body=json.dumps(bookings_details),
