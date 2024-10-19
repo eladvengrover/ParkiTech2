@@ -189,6 +189,19 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
         console.log("Building ID Response:", buildingId);
 
         if (buildingId === closestLocation.buildingId) {
+          
+           // Send email notification
+           const emailResponse = await fetch('https://parkitect.azurewebsites.net/api/SendEmail?', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              to_email: 'eladv@mail.tau.ac.il',
+              message: `Gur has arrived!`,
+            }),
+          });
+
           Alert.alert('Success', responseData.split(".")[0]);
           navigation.navigate('GuestDirection', { parkingId });
         } else {

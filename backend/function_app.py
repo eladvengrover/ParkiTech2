@@ -13,7 +13,7 @@ from db.users_operations import login, is_user_manager, create_new_user, remove_
 from db.booking_operations import search_booking_by_license_plate  # Import the new function
 from db.buildings_operations import get_buildings_list, get_building_locations_list
 from db.parkings_operations import create_new_parking, get_parkings_statuses, remove_parking, update_parking_details, get_parking_location_and_number, get_parking_building_id
-
+from emails_handler import send_email_wrapper
 
 from datetime import datetime
 from helpers import adjust_timezone_formatting
@@ -721,3 +721,49 @@ def UpdateParkingDetails(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f"Error in UpdateParkingDetails: {e}")
         return func.HttpResponse(f"Error: {str(e)}", status_code=500)
 
+
+@app.route(route="SendEmail", auth_level=func.AuthLevel.ANONYMOUS)
+def SendEmail(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request: SendEmail.')
+
+    try:
+        req_body = req.get_json()
+        logging.info(req_body)
+    except ValueError:
+        return func.HttpResponse(
+            json.dumps({"error": "Invalid request"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    to_email = req_body.get('to_email')
+    message = req_body.get('message')
+    if not to_email or not message:
+        return func.HttpResponse(
+            json.dumps({"error": "to_email and message required"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    try:
+        response = send_email_wrapper(to_email, message)
+        if response["response"] == "ok":
+            logging.info(f"Email sent successfully")
+            return func.HttpResponse(
+                body=json.dumps({"message": "Email sent successfully"}),
+                status_code=200,
+                mimetype="application/json"
+            )
+        else:
+            return func.HttpResponse(
+                json.dumps({"error": "Email was not sent successfully."}),
+                status_code=404,
+                mimetype="application/json"
+            )
+    except Exception as e:
+        logging.error(f"Error in SendEmail: {e}")
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}),
+            status_code=500,
+            mimetype="application/json"
+        )
