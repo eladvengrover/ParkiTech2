@@ -173,7 +173,10 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
 
       // Check the response from the server
       if (typeof responseData === 'string' && responseData.startsWith('Booking found for license plate')) {
-        const parkingId = Number(responseData.split(":")[1].trim())
+        const splittedText = responseData.split(";");
+        const parkingId = Number(splittedText[0].split(":")[1].trim())
+        const guestName = splittedText[1].split(":")[1].trim()
+        const tennantId = Number(splittedText[2].split(":")[1].trim())
 
         const buildingIdResponse = await fetch('https://parkitect.azurewebsites.net/api/GetBuildingIdByParkingId', {
           method: 'POST',
@@ -197,10 +200,12 @@ const GuestScreen: React.FC<Props> = ({ navigation }) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              to_email: 'eladv@mail.tau.ac.il',
-              message: `Gur has arrived!`,
+              tennant_id: tennantId,
+              message: `${guestName} has arrived!`,
             }),
           });
+
+          console.log(emailResponse);
 
           Alert.alert('Success', responseData.split(".")[0]);
           navigation.navigate('GuestDirection', { parkingId });

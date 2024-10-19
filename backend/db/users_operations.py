@@ -3,6 +3,24 @@ from .db_types.users_table_types import User
 from booking_managment import remove_bookings_by_user_id
 import logging
 
+
+def get_user_email_by_id(tennant_id):
+    try:
+        # Check if the user with the given id exists
+        user = session.query(User).filter_by(id=tennant_id).first()
+        
+        if not user:
+            logging.info(f"User with ID '{tennant_id}' doesn't exist.")
+            return None
+        
+        # Return the email of the user
+        return user.mail
+
+    except Exception as e:
+        logging.error(f"An error occurred while fetching the user: {e}")
+        return None
+
+
 def remove_user(username):
     try:
         # Check if the username exists

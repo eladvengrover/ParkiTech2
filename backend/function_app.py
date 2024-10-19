@@ -9,7 +9,7 @@ from azure.cognitiveservices.vision.computervision import ComputerVisionClient #
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes # type: ignore
 from msrest.authentication import CognitiveServicesCredentials # type: ignore
 from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details, delete_past_bookings
-from db.users_operations import login, is_user_manager, create_new_user, remove_user
+from db.users_operations import login, is_user_manager, create_new_user, remove_user, get_user_email_by_id
 from db.booking_operations import search_booking_by_license_plate  # Import the new function
 from db.buildings_operations import get_buildings_list, get_building_locations_list
 from db.parkings_operations import create_new_parking, get_parkings_statuses, remove_parking, update_parking_details, get_parking_location_and_number, get_parking_building_id
@@ -411,7 +411,7 @@ def ReadLicensePlate(req: func.HttpRequest) -> func.HttpResponse:
                     if numeric_text:
                         booking = search_booking_by_license_plate(numeric_text)
                         if booking:
-                            return func.HttpResponse(f"Booking found for license plate {numeric_text}. Parking ID is: {booking.parking_id}", status_code=200)
+                            return func.HttpResponse(f"Booking found for license plate {numeric_text}. Parking ID: {booking.parking_id}; Guest name: {booking.guest_name}; Tenant ID: {booking.resident_id}", status_code=200)
                         else:
                             return func.HttpResponse(f"No booking found for license plate {numeric_text}", status_code=404)
 
@@ -736,11 +736,14 @@ def SendEmail(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json"
         )
 
-    to_email = req_body.get('to_email')
     message = req_body.get('message')
-    if not to_email or not message:
+    tennant_id = req_body.get('tennant_id')
+    logging.info("debug log: " + str(tennant_id))
+    to_email = get_user_email_by_id(tennant_id)
+    logging.info("Found mail address to send: " + str(to_email))
+    if not to_email or not message or not tennant_id:
         return func.HttpResponse(
-            json.dumps({"error": "to_email and message required"}),
+            json.dumps({"error": "One of required fields is missing"}),
             status_code=400,
             mimetype="application/json"
         )
