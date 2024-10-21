@@ -103,8 +103,8 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
     console.log('------------------------------------');
     console.log('Vehicle Number:', vehicleNumber);
     console.log('Guest Name:', guestName);
-    console.log('Order Start Date and Time:', startDateTime);
-    console.log('Order End Date and Time:', endDateTime);
+    console.log('Order Start Date and Time:', new Date(startDateTime.getTime() + 3 * 60 * 60 * 1000).toISOString());
+    console.log('Order End Date and Time:', new Date(endDateTime.getTime() + 3 * 60 * 60 * 1000).toISOString());
     console.log('------------------------------------');
 
     const localizedStartDateTime = new Date(startDateTime.getTime() + 3 * 60 * 60 * 1000);

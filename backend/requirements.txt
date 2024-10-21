@@ -6,3 +6,7 @@ azure-functions
 sqlalchemy
 pyodbc
 azure-cognitiveservices-vision-computervision
+google-api-python-client
+google_auth_oauthlib
+google_auth_httplib2
+google
