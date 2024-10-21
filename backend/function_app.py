@@ -758,6 +758,8 @@ def SendEmail(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json"
             )
         else:
+            error = response["message"]
+            logging.info(f"error: {error}")
             return func.HttpResponse(
                 json.dumps({"error": "Email was not sent successfully."}),
                 status_code=404,

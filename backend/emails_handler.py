@@ -46,5 +46,5 @@ def send_email_wrapper(to_email, message):
         return {"response": "ok"}
 
     except Exception as e:
-        print(f"Error: {e}")
-        return {"response": "error"}
+        return {"response": "error", "message": str(e)}
+
