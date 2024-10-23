@@ -45,7 +45,7 @@ def remove_user(username):
         return -1
 
 
-def create_new_user(username, password, is_manager, building_id):
+def create_new_user(username, password, email, is_manager, building_id):
     try:
         # Check if the username already exists
         existing_user = session.query(User).filter_by(username=username).first()
@@ -58,6 +58,7 @@ def create_new_user(username, password, is_manager, building_id):
         new_user = User(
             username=username,
             password=password,
+            mail=email,
             is_manager=is_manager,
             building_id=building_id
         )

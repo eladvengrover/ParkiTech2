@@ -120,17 +120,21 @@ def update_parking_availability_after_delete(parking_id, start_time, end_time, b
 
     if slot_before_booking and slot_before_booking.status == 'Available' and slot_after_booking and slot_after_booking.status == 'Available':
         slot_before_booking.end_time = slot_after_booking.end_time
+        session.commit()
         session.delete(slot_after_booking)
         session.delete(slot_contain_booking)
     elif slot_before_booking and slot_before_booking.status == 'Available':
         slot_before_booking.end_time = end_time
+        session.commit()
         session.delete(slot_contain_booking)
     elif slot_after_booking and slot_after_booking.status == 'Available':
         slot_after_booking.start_time = start_time
+        session.commit()
         session.delete(slot_contain_booking)
     else:
         slot_contain_booking.status = 'Available'
         slot_contain_booking.booking_id = None
+        session.commit()
 
     session.commit()
 
@@ -210,7 +214,8 @@ def update_booking(booking_id, resident_id, guest_name, guest_car_number, start_
     try:
         # Fetch the existing booking
         existing_booking = session.query(Booking).filter_by(id=booking_id).one()
-
+        start_time += datetime.timedelta(hours=3)
+        end_time += datetime.timedelta(hours=3)
         # Check if start_time or end_time has changed
         if existing_booking.booking_start != start_time or existing_booking.booking_end != end_time:
             # Delete the existing booking

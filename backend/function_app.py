@@ -79,19 +79,25 @@ def CreateNewBooking(req: func.HttpRequest) -> func.HttpResponse:
 @app.route(route="RemoveBooking", auth_level=func.AuthLevel.ANONYMOUS)
 def RemoveBooking(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request: RemoveBooking.')
-
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-            logging.info(req_body)
-        except ValueError:
-            pass
-    else:
-        name = req_body.get('name')
-
     try:
-        booking_id = req_body['booking_id']
+        req_body = req.get_json()
+        logging.info(req_body)
+    except ValueError:
+        return func.HttpResponse(
+            json.dumps({"error": "Invalid request"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+
+    booking_id = req_body['booking_id']
+    if not booking_id:
+        logging.error("Error in RemoveBooking, booking ID required.")
+        return func.HttpResponse(
+            json.dumps({"error": "booking ID required"}),
+            status_code=400,
+            mimetype="application/json"
+        )
+    try:
         
         if remove_booking(booking_id):
             logging.info(f"Booking removed successfully: {req_body}")
@@ -106,22 +112,29 @@ def RemoveBooking(req: func.HttpRequest) -> func.HttpResponse:
 @app.route(route="UpdateBooking", auth_level=func.AuthLevel.ANONYMOUS)
 def UpdateBooking(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request: UpdateBooking.')
+    try:
+        req_body = req.get_json()
+        logging.info(req_body)
+    except ValueError:
+        return func.HttpResponse(
+            json.dumps({"error": "Invalid request"}),
+            status_code=400,
+            mimetype="application/json"
+        )
 
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-            logging.info(req_body)
-        except ValueError:
-            pass
-    else:
-        name = req_body.get('name')
+    booking_id = req_body['booking_id']
+    start_time = adjust_timezone_formatting(req_body['booking_start'])
+    end_time = adjust_timezone_formatting(req_body['booking_end'])
+
+    if not booking_id or not start_time or not end_time:
+        logging.error("Error in UpdateBooking, booking ID, start time and end time required.")
+        return func.HttpResponse(
+            json.dumps({"error": "booking ID, start time and end time required"}),
+            status_code=400,
+            mimetype="application/json"
+        )
 
     try:
-        booking_id = req_body['booking_id']
-        start_time = adjust_timezone_formatting(req_body['booking_start'])
-        end_time = adjust_timezone_formatting(req_body['booking_end'])
-
         updated_booking_id = update_booking(
             booking_id=booking_id,
             resident_id=req_body['resident_id'],
@@ -131,7 +144,7 @@ def UpdateBooking(req: func.HttpRequest) -> func.HttpResponse:
             end_time=end_time
         )
 
-        if updated_booking_id:
+        if updated_booking_id != -1:
             logging.info(f"Booking updated successfully: {req_body}")
             return func.HttpResponse("Booking updated successfully.", status_code=200)
         else:
@@ -206,29 +219,30 @@ def CreateNewUser(req: func.HttpRequest) -> func.HttpResponse:
 
     username = req_body.get('username')
     password = req_body.get('password')
+    email = req_body.get('email')
     is_manager = req_body.get('is_manager')
     building_id = req_body.get('building_id')
 
-    if not username or not password:
-        logging.error("Error in CreateNewUser, username/password required.")
+    if not username or not password or not email or not building_id:
+        logging.error("Error in CreateNewUser - username, password, email and building ID required.")
         return func.HttpResponse(
-            json.dumps({"error": "username/password required"}),
+            json.dumps({"error": "username, password, email and building ID required"}),
             status_code=400,
             mimetype="application/json"
         )
 
     try:
-        new_user_id = create_new_user(username, password, is_manager, building_id)
+        new_user_id = create_new_user(username, password, email, is_manager, building_id)
         if new_user_id != -1:
             return func.HttpResponse(
-                body=json.dumps({"user_id": new_user_id, "password": password, "is_manager": is_manager, "building_id": building_id}),
+                body=json.dumps({"user_id": new_user_id, "password": password, "email": email, "is_manager": is_manager, "building_id": building_id}),
                 status_code=200,
                 mimetype="application/json"
             )
         else:
-            logging.error("Error in CreateNewUser: username/password are incorrect.")
+            logging.error("Error in CreateNewUser: username/password/email/building ID are incorrect.")
             return func.HttpResponse(
-                json.dumps({"error": "username/password are incorrect"}),
+                json.dumps({"error": "username/password/email/building ID are incorrect"}),
                 status_code=403,
                 mimetype="application/json"
             )
