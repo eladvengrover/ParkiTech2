@@ -21,10 +21,11 @@ const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
   const [isAddParkingModalVisible, setAddParkingModalVisible] = useState(false);
 
 
-  const createUser = async (username: string, password: string, isManager: boolean, buildingId: number) => {
+  const createUser = async (username: string, password: string, email: string, isManager: boolean, buildingId:  number | null) => {
     console.log('------------------------------------');
     console.log('Username:', username);
     console.log('Password:', password);
+    console.log('Email:', email);
     console.log('Is Manager:', isManager);
     console.log('Building Id:', buildingId);
     console.log('------------------------------------');
@@ -32,6 +33,7 @@ const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
     const userData = {
       username: username,
       password: password,
+      email: email,
       is_manager: isManager,
       building_id: buildingId,
     };
@@ -63,7 +65,7 @@ const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const createParking = async (parkingNumber: number, location: string, buildingId: number, isPermanentlyBlocked: boolean) => {
+  const createParking = async (parkingNumber:  number | null, location: string, buildingId:  number | null, isPermanentlyBlocked: boolean) => {
     console.log('------------------------------------');
     console.log('Parking Number:', parkingNumber);
     console.log('Location:', location);
@@ -105,12 +107,13 @@ const ManagerMainScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleAddUser = (username: string, password: string, isManager: boolean, buildingId: number) => {
-    createUser(username, password, isManager, buildingId);
+  const handleAddUser = (username: string, password: string, email: string, isManager: boolean, buildingId: number | null) => {
+    createUser(username, password, email, isManager, buildingId);
     setAddUserModalVisible(false);
-  };
+};
 
-  const handleAddParking = (parkingNumber: number, location: string, buildingId: number, isPermanentlyBlocked: boolean) => {
+
+  const handleAddParking = (parkingNumber:  number | null, location: string, buildingId:  number | null, isPermanentlyBlocked: boolean) => {
     createParking(parkingNumber, location, buildingId, isPermanentlyBlocked);
     setAddParkingModalVisible(false);
   };

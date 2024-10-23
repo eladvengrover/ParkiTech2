@@ -31,14 +31,12 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
   const [guestName, setGuestName] = useState(initialGuestName)
   const [vehicleNumber, setVehicleNumber] = useState(initialVehicleNumber);
   const [startDateTime, setStartDateTime] = useState(() => {
-    const now = new Date();
-    now.setHours(now.getHours() + 1); // Add 1 hour to the current time
-    return now;
+    const startDate = new Date(initialStartDateTime);
+    return startDate;
   });
   const [endDateTime, setEndDateTime] = useState(() => {
-    const now = new Date();
-    now.setHours(now.getHours() + 2); // Add 2 hour to the current time
-    return now;
+    const endtDate = new Date(initialEndDateTime);
+    return endtDate;
   });
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
@@ -224,7 +222,8 @@ const EditBookingScreen: React.FC<Props> = ({ navigation }) => {
         )}
         <Text style={commonStyles.dateText}>Selected End: {formatDateTime(endDateTime)}</Text>
       </View>
-  
+      <Text style={commonStyles.label}>Parking Number: {parkingNumber}</Text>
+
       {/* Save Button */}
       <TouchableOpacity style={commonStyles.button} onPress={handleSave}>
         <Text style={commonStyles.buttonText}>Save Changes</Text>
