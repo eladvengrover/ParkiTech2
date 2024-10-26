@@ -1,59 +1,70 @@
-General
-Parkitect is an innovative app that simplifies guest parking management for residential and commercial buildings. Designed to serve tenants, managers, and guests, the app provides an easy way to reserve and manage parking spaces, enhancing the overall experience for everyone involved.
+Parkitect
+Parkitect is an innovative app designed to simplify guest parking management for residential and commercial buildings. It serves tenants, managers, and guests by offering a streamlined way to reserve and manage parking spaces, enhancing the overall parking experience for all users.
+
 Key Features
-For Tenants: Tenants have the convenience of booking parking spaces for their guests in advance. Each tenant has a personal account where they can schedule and manage reservations, making it easy to ensure a guest has a designated spot upon arrival.
-For Managers: Building managers have full control over parking slot allocations, including the ability to add or remove users, assign parking spaces, and monitor current parking reservations in real time. This feature gives managers a complete view of parking usage, making it easier to oversee and organize the available spaces.
-For Guests: Upon arriving, guests benefit from a seamless entry process. Their license plates are automatically scanned at the parking lot entrance, where the system verifies any existing booking. If a booking is confirmed, the guest gains entry and receives directions to their reserved parking slot. Tenants are then automatically notified via email that their guest has arrived.
+For Tenants: Tenants can book parking spaces for their guests in advance. Each tenant has a personal account to schedule and manage reservations, ensuring guests have a designated spot upon arrival.
 
-Architecture
+For Managers: Building managers can control parking slot allocations, add or remove users, assign parking spaces, and monitor reservations in real time. This provides managers with a complete view of parking usage, simplifying organization and oversight.
+
+For Guests: Guests benefit from a seamless entry process as their license plates are scanned at the parking lot entrance, where the system verifies any existing booking. If confirmed, guests gain entry and are directed to their reserved spot. Tenants receive an automatic email notification upon their guest's arrival.
+
+Architecture Overview
 This project consists of two major components:
+
 The App: Built with a Python backend and a React Native frontend using TypeScript.
- Cloud Services: Integrated services include:
+
+Cloud Services: Integrated services include:
+
 Azure Function App: Stateless backend functions.
-Azure SQL Database: Stores the app's data, including tables for bookings, users, buildings, parkings, and parking availability.
-Azure Computer Vision: Used for license plate recognition functionality.
-Email Service (Google Cloud Console): Integrated with Gmail API for sending automated emails to users.
-
-
-
+Azure SQL Database: Stores app data, including tables for bookings, users, buildings, parkings, and parking availability.
+Azure Computer Vision: Used for license plate recognition.
+Email Service (Google Cloud Console): Integrated with the Gmail API to send automated emails to users.
 Frontend (React Native with TypeScript)
+The frontend is responsible for the user interface (UI) and is developed using React Native with TypeScript for type safety. The app structure includes:
 
-The frontend is responsible for the user interface (UI) and is developed using React Native with TypeScript for type safety. The app is organized as follows:
-App Entry Point: The App.tsx file acts as the main entry point for the mobile app.
-Configuration Files: The frontend folder includes environment and configuration files like app.json, tsconfig.json, and babel.config.js, which manage the Expo app configuration, TypeScript setup, and Babel transpilation settings.
-Screens: The screens/ folder contains the individual screens for the app, each representing a different part of the user experience (e.g., booking screens, user profiles).
+App Entry Point: App.tsx acts as the main entry point for the mobile app.
+
+Configuration Files: The frontend folder includes environment and configuration files like app.json, tsconfig.json, and babel.config.js, managing the Expo app configuration, TypeScript setup, and Babel transpilation settings.
+
+Screens: The screens/ folder contains the individual screens of the app, representing various parts of the user experience (e.g., booking screens, user profiles).
 
 Backend (Python with Azure Function App)
+The backend is stateless and deployed using Azure Function App to handle HTTP requests from the frontend. Key backend components include:
 
-The backend is stateless and deployed using Azure Function App, designed to handle HTTP requests triggered by the frontend. The key components of the backend include:
-function_app.py: This is the main entry point for the serverless backend. It defines various endpoints that handle HTTP requests from the app. Each function in this file corresponds to a unique API endpoint, providing a clear interface between the frontend and the backend.
-helpers.py: This file contains utility functions that assist the backend processes. These might include data formatting, validation, or other reusable logic shared across the backend functions.
-booking_managment.py: This file handles all booking-related logic, such as creating, updating, or deleting booking records. It directly interacts with the SQL database, managing data related to the bookings table and other associated records. The functions in this file are triggered by the function_app.py endpoints.
-Email Integration: Automated emails are sent via the Gmail API through the Google Cloud Console. Functions within the backend can trigger emails, such as notifying tenants when their guests arrive. The email service is integrated into the backend functions and specifically used to send notifications to tenants when a guest's car is recognized by the license plate recognition system. This ensures tenants are informed in real-time of their guest's arrival.
-Database Integration: The backend interacts with the Azure SQL Database. This database stores data across five key tables:
-bookings: Stores booking information.
-users: Holds user data.
-buildings: Contains building information.
-parkings: Tracks parking spots.
-parking_availability: Manages parking spot availability.
-The db/ folder contains configuration files and data manipulation scripts that interact with these SQL tables. These files are invoked by the backend functions to fetch, update, or delete data as required.
+function_app.py: The main entry point for the serverless backend. This file defines the API endpoints to handle HTTP requests from the app, providing a clear interface between frontend and backend.
+
+helpers.py: Contains utility functions to assist backend processes, including data formatting and validation.
+
+booking_management.py: Manages all booking-related logic, such as creating, updating, or deleting booking records, interacting with the SQL database for data related to bookings and other associated records.
+
+Email Integration: Automated emails are sent via the Gmail API (Google Cloud Console) to notify tenants when guests arrive. Integrated into backend functions, the email service keeps tenants informed in real-time of guest arrivals.
+
+Database Integration: The backend interacts with the Azure SQL Database, storing data across five tables:
+
+bookings: Booking information.
+users: User data.
+buildings: Building information.
+parkings: Parking spot data.
+parking_availability: Parking spot availability.
+The db/ folder contains configuration files and data manipulation scripts for interacting with these SQL tables. Backend functions use these scripts to fetch, update, or delete data as required.
 
 Cloud Services
+Azure SQL Database: Stores core data across tables for users, bookings, and parking spot availability, providing persistent data storage.
 
-Azure SQL Database: Used to store all of the app’s core information across the five mentioned tables. It provides persistent data storage for users, bookings, and availability of parking spots.
+Azure Function App: Stateless functions respond to HTTP requests from the frontend, with each function designed for quick, on-demand execution triggered by app interactions.
 
-Azure Function App: Each function is designed to be stateless and responds to HTTP requests from the frontend. The functions are lightweight and optimized for quick response times, only executing when triggered by user interactions within the app.
+Azure Computer Vision: Enables license plate recognition for verifying vehicles and managing parking availability based on plate numbers.
 
-Azure Computer Vision: This service is integrated into the app to enable license plate recognition, which might be used for verifying cars or managing parking availability based on plate numbers.
+Google Cloud Email Service: Uses the Gmail API to send automated emails (e.g., guest arrival notifications), authenticated through Google Cloud Console and triggered by backend functions.
 
-Google Cloud Email Service: Integrated to send automated emails (guest arrival notices). Emails are triggered by backend functions and handled via the Gmail API, authenticated through Google Cloud Console.
+Flow of Operations
+User Interaction: A user interacts with the app UI, performing actions like booking a parking spot.
 
-Flow of Operations:
+API Call to Backend: User actions trigger HTTP requests to API endpoints defined in function_app.py.
 
-1. User Interaction: A user interacts with the app (the UI), performing actions such as booking a parking spot.
-2. API Call to Backend: Each user action triggers an HTTP request to an API endpoint defined in the function_app.py file.
-3. Function Execution: The corresponding backend function processes the request. For example, a booking request triggers a function in booking_managment.py to create or update a booking in the database.
-4. Database Interaction: The function communicates with the SQL database, interacting with the relevant tables to retrieve or modify data.
-5. Response to Frontend: Once the function completes, the result (e.g., success message, booking details) is sent back to the frontend, updating the UI based on the action performed.
+Function Execution: The backend processes requests via functions, such as creating or updating bookings through booking_management.py.
 
-This architecture leverages Azure's cloud services to ensure scalability, while the separation of concerns between frontend and backend makes it easier to manage and develop each component independently. The use of React Native with TypeScript ensures a cross-platform mobile app with type-safe code, and the integration of serverless functions allows the backend to scale automatically based on demand.
+Database Interaction: The function interacts with the SQL database to retrieve or modify data as needed.
+
+Response to Frontend: After processing, results (e.g., booking details) are sent back to the frontend, updating the UI based on the action.
+
