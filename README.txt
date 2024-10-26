@@ -1,4 +1,4 @@
-Parkitect
+*Parkitect*
 Parkitect is an innovative app designed to simplify guest parking management for residential and commercial buildings. It serves tenants, managers, and guests by offering a streamlined way to reserve and manage parking spaces, enhancing the overall parking experience for all users.
 
 Key Features
