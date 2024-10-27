@@ -2,7 +2,7 @@
 
 Parkitect is a comprehensive IoT solution designed to simplify guest parking management in residential and commercial buildings. By offering features for tenant reservations, guest access control, and real-time management tools for building administrators, Parkitect helps create a seamless parking experience. 
 
-For in-depth details on features, architecture, and use cases, please refer to the accompanying project document - "Workshop on IoT - Parkitect.pdf".
+For in-depth details on features, architecture, and use cases, please refer to the accompanying project document - "Workshop on IoT - Parkitect.pdf" (./Workshop%20on%20IoT%20-%20Parkitect.pdf).
 
 ### Setup and Installation
 
@@ -11,7 +11,7 @@ For in-depth details on features, architecture, and use cases, please refer to t
    cd Parkitect
 
 2. **Install Dependencies:**  
-   Ensure [Node.js](https://nodejs.org/) and [Python](https://www.python.org/) are installed.
+   Ensure Node.js (https://nodejs.org/) and Python (https://www.python.org/) are installed.
    
    - For the frontend:
      cd frontend
