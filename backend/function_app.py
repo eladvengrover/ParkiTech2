@@ -8,9 +8,8 @@ import re  # Import the regular expressions module
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient # type: ignore
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes # type: ignore
 from msrest.authentication import CognitiveServicesCredentials # type: ignore
-from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details, delete_past_bookings
+from booking_managment import allocate_and_book_parking, update_booking, remove_booking, get_bookings_details, delete_past_bookings, search_booking_by_license_plate
 from db.users_operations import login, is_user_manager, create_new_user, remove_user, get_user_email_by_id
-from db.booking_operations import search_booking_by_license_plate  # Import the new function
 from db.buildings_operations import get_buildings_list, get_building_locations_list
 from db.parkings_operations import create_new_parking, get_parkings_statuses, remove_parking, update_parking_details, get_parking_location_and_number, get_parking_building_id
 from emails_handler import send_email_wrapper
