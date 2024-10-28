@@ -1,6 +1,6 @@
 from .connection import session
 from .db_types.users_table_types import User
-from .bookings_operations import remove_bookings_by_user_id
+from booking_managment import remove_bookings_by_user_id
 import logging
 
 
