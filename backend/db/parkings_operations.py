@@ -1,8 +1,10 @@
-from .bookings_operations import remove_bookings_by_parking_id
+from booking_managment import remove_bookings_by_parking_id
 from .connection import session
 from db.db_types.parking_availability_types import ParkingAvailability
 from db.db_types.parking_table_types import Parking
+from db.db_types.booking_table_types import Booking
 import datetime
+from booking_managment import remove_bookings_by_parking_id
 from sqlalchemy import and_
 from sqlalchemy.orm.exc import NoResultFound
 import logging
