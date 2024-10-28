@@ -9,12 +9,12 @@ import logging
 from sqlalchemy import and_ # type: ignore
 from sqlalchemy.orm.exc import NoResultFound # type: ignore
 
-
+TIMEZONE_HOURS_OFFSET = 2;
 
 
 def get_parkings_statuses(building_id):
     try:
-        now = datetime.datetime.now() + datetime.timedelta(hours=3)
+        now = datetime.datetime.now() + datetime.timedelta(hours=TIMEZONE_HOURS_OFFSET)
         
         # Querying ParkingAvailability with a join on Parking table to filter by building_id
         parking_status = session.query(

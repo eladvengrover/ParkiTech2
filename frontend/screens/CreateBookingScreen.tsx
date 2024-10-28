@@ -7,6 +7,8 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 
+const TIMEZONE_HOURS_OFFSET = 2;
+
 type CreateBookingScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CreateBooking'>;
 type CreateBookingScreenRouteProp = RouteProp<RootStackParamList, 'CreateBooking'>;
 
@@ -103,12 +105,12 @@ const CreateBookingScreen: React.FC<Props> = ({ navigation }) => {
     console.log('------------------------------------');
     console.log('Vehicle Number:', vehicleNumber);
     console.log('Guest Name:', guestName);
-    console.log('Order Start Date and Time:', new Date(startDateTime.getTime() + 3 * 60 * 60 * 1000).toISOString());
-    console.log('Order End Date and Time:', new Date(endDateTime.getTime() + 3 * 60 * 60 * 1000).toISOString());
+    console.log('Order Start Date and Time:', new Date(startDateTime.getTime() + TIMEZONE_HOURS_OFFSET * 60 * 60 * 1000).toISOString());
+    console.log('Order End Date and Time:', new Date(endDateTime.getTime() + TIMEZONE_HOURS_OFFSET * 60 * 60 * 1000).toISOString());
     console.log('------------------------------------');
 
-    const localizedStartDateTime = new Date(startDateTime.getTime() + 3 * 60 * 60 * 1000);
-    const localizedEndDateTime = new Date(endDateTime.getTime() + 3 * 60 * 60 * 1000);
+    const localizedStartDateTime = new Date(startDateTime.getTime() + TIMEZONE_HOURS_OFFSET * 60 * 60 * 1000);
+    const localizedEndDateTime = new Date(endDateTime.getTime() + TIMEZONE_HOURS_OFFSET * 60 * 60 * 1000);
 
     const bookingData = {
       resident_id: tenantId,

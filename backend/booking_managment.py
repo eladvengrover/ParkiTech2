@@ -10,6 +10,8 @@ from sqlalchemy.orm.exc import NoResultFound
 import datetime
 import logging
 
+TIMEZONE_HOURS_OFFSET = 2;
+
 def update_parking_availability_after_Create(parking_id, start_time, end_time, booking_id):
     slot_contain_new_booking = session.query(ParkingAvailability).filter(
         and_(
@@ -157,8 +159,8 @@ def update_booking(booking_id, resident_id, guest_name, guest_car_number, start_
     try:
         # Fetch the existing booking
         existing_booking = session.query(Booking).filter_by(id=booking_id).one()
-        start_time += datetime.timedelta(hours=3)
-        end_time += datetime.timedelta(hours=3)
+        start_time += datetime.timedelta(hours=TIMEZONE_HOURS_OFFSET)
+        end_time += datetime.timedelta(hours=TIMEZONE_HOURS_OFFSET)
         # Check if start_time or end_time has changed
         if existing_booking.booking_start != start_time or existing_booking.booking_end != end_time:
             # Delete the existing booking
@@ -271,7 +273,7 @@ def get_bookings_details(resident_id):
         return None
     
 def delete_past_bookings():
-    current_time = datetime.datetime.now() + datetime.timedelta(hours=3)  # Adjust for your timezone
+    current_time = datetime.datetime.now() + datetime.timedelta(hours=TIMEZONE_HOURS_OFFSET)  # Adjust for your timezone
     logging.info(f"Current time: {current_time}")
 
     try:
@@ -295,12 +297,12 @@ if __name__ == "__main__":
         guest_name="Elad2",
         guest_car_number="1234XYZ",
         start_time=datetime.datetime.now() + datetime.timedelta(days=1),
-        end_time=datetime.datetime.now() + datetime.timedelta(days=1) + datetime.timedelta(hours=2)
+        end_time=datetime.datetime.now() + datetime.timedelta(days=1) + datetime.timedelta(hours=TIMEZONE_HOURS_OFFSET)
 
     )
 
 def search_booking_by_license_plate(license_plate):
-    current_time = datetime.now() + datetime.timedelta(hours=3)
+    current_time = datetime.now() + datetime.timedelta(hours=TIMEZONE_HOURS_OFFSET)
     booking = session.query(Booking).filter_by(guest_car_number=license_plate).filter(
         Booking.booking_start <= current_time,
         Booking.booking_end >= current_time
