@@ -10,58 +10,6 @@ from sqlalchemy.orm.exc import NoResultFound
 import datetime
 import logging
 
-NUM_PARKING_SPACES = 100
-
-# Function not relevant for current basic flow
-def rearrange_bookings_and_insert(start_time, end_time, resident_id, guest_name, guest_car_number):
-    now = datetime.datetime.now() + datetime.timedelta(hours=3)
-    conflicting_bookings = session.query(ParkingAvailability).filter(
-        and_(
-            ParkingAvailability.status == 'Occupied',
-            ParkingAvailability.start_time > now,
-            ParkingAvailability.start_time < end_time,
-            ParkingAvailability.end_time > start_time
-        )
-    ).all()
-
-    # Step 2: Check for potential swaps and insert new booking if possible
-    for booking in conflicting_bookings:
-        for other_parking_id in range(1, NUM_PARKING_SPACES + 1):
-            if other_parking_id != booking.parking_id:
-                if is_time_slot_available(other_parking_id, booking.start_time, booking.end_time):
-                    # Perform the move
-                    original_parking_id = booking.parking_id
-                    move_booking(booking, other_parking_id)
-                    
-                    # Check if the original slot is now available for the new booking
-                    if is_time_slot_available(original_parking_id, start_time, end_time):
-                        # Insert the new booking
-                        new_booking_id = create_booking(resident_id, guest_name, guest_car_number, start_time, end_time, original_parking_id)
-                        return new_booking_id
-
-                    # If it didn't work, undo the move
-                    move_booking(booking, original_parking_id)
-    return -1
-
-# Function not relevant for current basic flow
-def is_time_slot_available(parking_id, start_time, end_time):
-    occupied_slots = session.query(ParkingAvailability).filter(
-        and_(
-            ParkingAvailability.parking_id == parking_id,
-            ParkingAvailability.status == 'Occupied',
-            ParkingAvailability.start_time < end_time,
-            ParkingAvailability.end_time > start_time
-        )
-    ).all()
-    return len(occupied_slots) == 0
-
-# Function not relevant for current basic flow
-def move_booking(booking, new_parking_id):
-    original_parking_id = booking.parking_id
-    booking.parking_id = new_parking_id
-    session.commit()
-    # TODO - implement the Update ParkingAvailability table
-
 def update_parking_availability_after_Create(parking_id, start_time, end_time, booking_id):
     slot_contain_new_booking = session.query(ParkingAvailability).filter(
         and_(
@@ -203,11 +151,6 @@ def allocate_and_book_parking(resident_id, guest_name, guest_car_number, start_t
         new_booking_id = create_booking(resident_id, guest_name, guest_car_number, start_time, end_time, best_parking)
         return (new_booking_id, best_parking) 
     else:
-        # TODO enable rearranged feature in the future
-        # rearranged = rearrange_bookings_and_insert(start_time, end_time, resident_id, guest_name, guest_car_number, status)
-        # if rearranged != -1:
-        #     return rearranged
-        # else:
         return (-1, -1)
 
 def update_booking(booking_id, resident_id, guest_name, guest_car_number, start_time, end_time):
@@ -229,7 +172,7 @@ def update_booking(booking_id, resident_id, guest_name, guest_car_number, start_
                 start_time=start_time,
                 end_time=end_time
             )
-            return new_booking_id #TODO - what happens if updating doesnt success?
+            return new_booking_id
         else:
             # Update the existing booking details without changing times
             existing_booking.resident_id = resident_id
@@ -357,13 +300,10 @@ if __name__ == "__main__":
     )
 
 def search_booking_by_license_plate(license_plate):
-    current_time = datetime.now()
-    booking = session.query(Booking).filter(
-        and_(
-            Booking.guest_car_number == license_plate,
-            Booking.booking_start <= current_time,
-            Booking.booking_end >= current_time
-        )
+    current_time = datetime.now() + datetime.timedelta(hours=3)
+    booking = session.query(Booking).filter_by(guest_car_number=license_plate).filter(
+        Booking.booking_start <= current_time,
+        Booking.booking_end >= current_time
     ).first()
     return booking
 
